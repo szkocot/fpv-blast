@@ -1,0 +1,309 @@
+<style>
+  body { background: #0a0a0f; color: #e0e0e0; font-family: -apple-system, sans-serif; }
+  .question { text-align: center; margin-bottom: 24px; }
+  .question h2 { color: #fff; font-size: 20px; margin-bottom: 6px; }
+  .question p { color: #999; font-size: 14px; }
+
+  .phone-wrap { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; }
+
+  .phone {
+    width: 280px;
+    background: #1a1a2e;
+    border-radius: 40px;
+    border: 2px solid #333;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .phone:hover { transform: translateY(-4px); box-shadow: 0 28px 70px rgba(0,0,0,0.7); }
+  .phone.selected { border-color: #4a9eff; box-shadow: 0 0 0 3px rgba(74,158,255,0.3); }
+
+  .phone-label {
+    text-align: center;
+    margin-top: 12px;
+    font-weight: 600;
+    color: #ccc;
+    font-size: 15px;
+  }
+  .phone-sub {
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+    margin-top: 4px;
+    margin-bottom: 16px;
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex; justify-content: space-between;
+    padding: 8px 16px 4px;
+    font-size: 11px; color: #aaa;
+    background: #111;
+  }
+
+  /* App header */
+  .app-header {
+    padding: 8px 14px 6px;
+    background: #111;
+    border-bottom: 1px solid #222;
+  }
+  .app-title { font-size: 13px; font-weight: 700; color: #4a9eff; letter-spacing: 1px; }
+  .location-row { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+  .location-row span { font-size: 11px; color: #bbb; }
+  .location-dot { width: 6px; height: 6px; border-radius: 50%; background: #4aff80; flex-shrink: 0; }
+
+  /* Heatmap chart */
+  .chart-area { padding: 8px 8px 4px; }
+  .chart-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .chart-title { font-size: 10px; color: #888; }
+  .unit-badge { font-size: 9px; background: #2a2a3e; color: #aaa; padding: 2px 6px; border-radius: 8px; }
+
+  /* Y axis labels + heatmap grid */
+  .chart-body { display: flex; gap: 4px; }
+  .y-axis { display: flex; flex-direction: column; justify-content: space-between; padding: 0; }
+  .y-label { font-size: 8px; color: #666; text-align: right; line-height: 1; }
+
+  .heatmap { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+  .heatmap-row { display: flex; gap: 1px; height: 10px; }
+  .heatmap-cell { flex: 1; border-radius: 1px; }
+
+  /* X axis */
+  .x-axis { display: flex; justify-content: space-between; margin-top: 3px; padding-left: 22px; }
+  .x-label { font-size: 8px; color: #666; }
+
+  /* Slider */
+  .time-slider-area { padding: 6px 8px 4px; border-top: 1px solid #1f1f2f; }
+  .slider-label { font-size: 9px; color: #666; margin-bottom: 3px; }
+  .slider-track { height: 3px; background: #2a2a3e; border-radius: 2px; position: relative; }
+  .slider-fill { height: 3px; background: #4a9eff; border-radius: 2px; width: 30%; }
+  .slider-thumb { width: 10px; height: 10px; background: #fff; border-radius: 50%; position: absolute; top: -3.5px; left: 28%; box-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+  .slider-dates { display: flex; justify-content: space-between; margin-top: 3px; }
+  .slider-date { font-size: 8px; color: #555; }
+
+  /* Threshold bar */
+  .threshold-area {
+    padding: 6px 8px 4px;
+    border-top: 1px solid #1f1f2f;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .threshold-label { font-size: 9px; color: #888; }
+  .threshold-value { font-size: 11px; font-weight: 700; color: #fff; }
+  .threshold-unit { font-size: 9px; color: #666; }
+  .legend { display: flex; gap: 4px; margin-left: auto; }
+  .legend-item { display: flex; align-items: center; gap: 2px; }
+  .legend-dot { width: 7px; height: 7px; border-radius: 2px; }
+  .legend-text { font-size: 8px; color: #888; }
+
+  /* Settings row */
+  .settings-row {
+    padding: 5px 8px;
+    background: #0d0d1a;
+    display: flex; justify-content: flex-end;
+    gap: 10px;
+  }
+  .settings-icon { font-size: 14px; }
+</style>
+
+<div class="question">
+  <h2>Which layout feels right for the main screen?</h2>
+  <p class="subtitle">Both show the wind heatmap — they differ in information density and controls placement</p>
+</div>
+
+<div class="phone-wrap">
+
+  <!-- Option A: Compact, chart-focused -->
+  <div>
+    <div class="phone option" data-choice="a" onclick="toggleSelect(this)">
+      <div class="letter" style="position:absolute;top:8px;left:8px;z-index:10">A</div>
+
+      <div class="status-bar">
+        <span>21:37</span><span>●●● 5G ▮▮▮</span>
+      </div>
+      <div class="app-header">
+        <div class="app-title">FPV BLAST</div>
+        <div class="location-row">
+          <div class="location-dot"></div>
+          <span>Kraków, PL · Sat 22 Mar</span>
+        </div>
+      </div>
+
+      <div class="chart-area">
+        <div class="chart-title-row">
+          <span class="chart-title">Wind speed by altitude</span>
+          <span class="unit-badge">km/h</span>
+        </div>
+        <div class="chart-body">
+          <div class="y-axis">
+            <div class="y-label">180m</div>
+            <div class="y-label">130m</div>
+            <div class="y-label">80m</div>
+            <div class="y-label">30m</div>
+            <div class="y-label">10m</div>
+          </div>
+          <div style="flex:1">
+            <div class="heatmap" id="heatmap-a"></div>
+            <div class="x-axis">
+              <span class="x-label">08:00</span>
+              <span class="x-label">12:00</span>
+              <span class="x-label">16:00</span>
+              <span class="x-label">20:00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="time-slider-area">
+        <div class="slider-label">Drag to explore · 7-day window</div>
+        <div class="slider-track">
+          <div class="slider-fill"></div>
+          <div class="slider-thumb"></div>
+        </div>
+        <div class="slider-dates">
+          <span class="slider-date">22 Mar</span>
+          <span class="slider-date">25 Mar</span>
+          <span class="slider-date">28 Mar</span>
+        </div>
+      </div>
+
+      <div class="threshold-area">
+        <span class="threshold-label">Threshold</span>
+        <span class="threshold-value">25</span>
+        <span class="threshold-unit">km/h</span>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#4aff80"></div><span class="legend-text">OK</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ffd040"></div><span class="legend-text">Caution</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ff4444"></div><span class="legend-text">No-fly</span></div>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-icon">⚙️</span>
+      </div>
+    </div>
+    <div class="phone-label">Option A</div>
+    <div class="phone-sub">Chart-dominant · controls at bottom</div>
+  </div>
+
+  <!-- Option B: Header summary strip + chart -->
+  <div>
+    <div class="phone option" data-choice="b" onclick="toggleSelect(this)">
+      <div class="letter" style="position:absolute;top:8px;left:8px;z-index:10">B</div>
+
+      <div class="status-bar">
+        <span>21:37</span><span>●●● 5G ▮▮▮</span>
+      </div>
+
+      <!-- Bold header with summary strip -->
+      <div style="background:#111;padding:8px 14px 6px;border-bottom:1px solid #222;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div class="app-title">FPV BLAST</div>
+            <div style="font-size:10px;color:#bbb;margin-top:1px;">📍 Kraków, PL</div>
+          </div>
+          <span style="font-size:18px;">⚙️</span>
+        </div>
+        <!-- Summary strip -->
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <div style="flex:1;background:#1a2a1a;border:1px solid #2a4a2a;border-radius:8px;padding:5px;text-align:center;">
+            <div style="font-size:8px;color:#4aff80;">NOW · 10m</div>
+            <div style="font-size:14px;font-weight:700;color:#4aff80;">18</div>
+            <div style="font-size:8px;color:#888;">km/h ✓</div>
+          </div>
+          <div style="flex:1;background:#2a2a1a;border:1px solid #4a4a2a;border-radius:8px;padding:5px;text-align:center;">
+            <div style="font-size:8px;color:#ffd040;">PEAK · 80m</div>
+            <div style="font-size:14px;font-weight:700;color:#ffd040;">31</div>
+            <div style="font-size:8px;color:#888;">km/h ⚠</div>
+          </div>
+          <div style="flex:1;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:8px;padding:5px;text-align:center;">
+            <div style="font-size:8px;color:#aaa;">BEST TIME</div>
+            <div style="font-size:13px;font-weight:700;color:#fff;">14:00</div>
+            <div style="font-size:8px;color:#888;">today</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-area">
+        <div class="chart-title-row">
+          <span class="chart-title">Wind · Sat 22 Mar</span>
+          <span class="unit-badge">km/h</span>
+        </div>
+        <div class="chart-body">
+          <div class="y-axis">
+            <div class="y-label">180m</div>
+            <div class="y-label">130m</div>
+            <div class="y-label">80m</div>
+            <div class="y-label">30m</div>
+            <div class="y-label">10m</div>
+          </div>
+          <div style="flex:1">
+            <div class="heatmap" id="heatmap-b"></div>
+            <div class="x-axis">
+              <span class="x-label">08:00</span>
+              <span class="x-label">12:00</span>
+              <span class="x-label">16:00</span>
+              <span class="x-label">20:00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="time-slider-area">
+        <div class="slider-label">Sat 22 → Fri 28 Mar</div>
+        <div class="slider-track">
+          <div class="slider-fill"></div>
+          <div class="slider-thumb"></div>
+        </div>
+        <div class="slider-dates">
+          <span class="slider-date">22 Mar</span>
+          <span class="slider-date">25 Mar</span>
+          <span class="slider-date">28 Mar</span>
+        </div>
+      </div>
+
+      <div style="padding:4px 8px 6px;border-top:1px solid #1f1f2f;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:9px;color:#888;">Threshold</span>
+        <span style="font-size:11px;font-weight:700;color:#fff;">25 km/h</span>
+        <div class="legend" style="margin-left:auto;">
+          <div class="legend-item"><div class="legend-dot" style="background:#4aff80"></div><span class="legend-text">OK</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ffd040"></div><span class="legend-text">±20%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ff4444"></div><span class="legend-text">No-fly</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label">Option B</div>
+    <div class="phone-sub">Summary strip · at-a-glance current conditions</div>
+  </div>
+
+</div>
+
+<script>
+// Generate heatmap cells
+function makeHeatmap(id, seed) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const heights = 18; // 10m to 180m
+  const hours = 24;
+  const threshold = 25;
+
+  for (let h = heights - 1; h >= 0; h--) {
+    const row = document.createElement('div');
+    row.className = 'heatmap-row';
+    for (let t = 0; t < hours; t++) {
+      const cell = document.createElement('div');
+      cell.className = 'heatmap-cell';
+      // Simulate wind increasing with height and varying through day
+      const base = 12 + h * 1.2 + Math.sin((t + seed) * 0.4 + h * 0.3) * 8 + Math.random() * 4;
+      let color;
+      if (base < threshold * 0.8) color = `rgba(74,255,128,${0.4 + base/threshold*0.5})`;
+      else if (base < threshold) color = `rgba(255,208,64,${0.5 + (base-threshold*0.8)/(threshold*0.2)*0.4})`;
+      else color = `rgba(255,68,68,${0.5 + Math.min((base-threshold)/threshold, 1)*0.5})`;
+      cell.style.background = color;
+      row.appendChild(cell);
+    }
+    el.appendChild(row);
+  }
+}
+makeHeatmap('heatmap-a', 1);
+makeHeatmap('heatmap-b', 2);
+</script>

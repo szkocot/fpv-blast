@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>FPV Blast – UI Structure</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0f;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 40px;
+    min-height: 100vh;
+  }
+
+  h2 { color: #fff; font-size: 18px; margin-bottom: 6px; text-align: center; }
+  .subtitle { color: #777; font-size: 13px; text-align: center; margin-bottom: 28px; }
+
+  .scene {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ── PHONE ── */
+  .phone {
+    width: 300px;
+    background: #1a1a2e;
+    border-radius: 42px;
+    border: 2px solid #333;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+    flex-shrink: 0;
+  }
+
+  /* status bar */
+  .sb {
+    background: #0d0d1a;
+    display: flex; justify-content: space-between;
+    padding: 9px 18px 5px;
+    font-size: 11px; color: #888;
+  }
+
+  /* ── HEADER ── */
+  .app-header {
+    background: #0d0d1a;
+    padding: 8px 16px 10px;
+    border-bottom: 1px solid #1f1f30;
+  }
+  .header-row { display: flex; justify-content: space-between; align-items: center; }
+  .app-name { font-size: 15px; font-weight: 800; color: #4a9eff; letter-spacing: 1.5px; }
+  .header-date { font-size: 11px; color: #666; }
+  .loc-row { display: flex; align-items: center; gap: 5px; margin-top: 3px; }
+  .loc-dot { width: 7px; height: 7px; border-radius: 50%; background: #4aff80; }
+  .loc-text { font-size: 11px; color: #bbb; }
+
+  /* ── SUMMARY STRIP ── */
+  .summary-strip {
+    background: #0d0d1a;
+    padding: 10px 12px 10px;
+    border-bottom: 1px solid #1f1f30;
+    display: flex;
+    gap: 8px;
+  }
+  .sum-card {
+    flex: 1;
+    border-radius: 10px;
+    padding: 7px 6px;
+    text-align: center;
+  }
+  .sum-label { font-size: 8px; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .sum-value { font-size: 18px; font-weight: 800; line-height: 1; }
+  .sum-sub { font-size: 8px; margin-top: 2px; opacity: 0.75; }
+
+  /* ── HEATMAP AREA ── */
+  .heatmap-area { padding: 10px 10px 4px; }
+  .chart-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .chart-meta-label { font-size: 10px; color: #777; }
+  .unit-pill { font-size: 9px; background: #1f1f30; color: #aaa; padding: 2px 8px; border-radius: 10px; }
+
+  .chart-body { display: flex; gap: 5px; }
+
+  .y-axis-col { display: flex; flex-direction: column; justify-content: space-between; width: 26px; }
+  .y-tick { font-size: 8px; color: #666; text-align: right; line-height: 1; }
+
+  .heatmap-grid { flex: 1; }
+  .heatmap-row { display: flex; gap: 1.2px; margin-bottom: 1.2px; }
+  .cell { flex: 1; height: 9px; border-radius: 1.5px; }
+
+  .x-axis-row { display: flex; justify-content: space-between; padding-left: 31px; margin-top: 4px; }
+  .x-tick { font-size: 8px; color: #666; }
+
+  /* ── TIME SLIDER ── */
+  .slider-area {
+    padding: 8px 12px 6px;
+    border-top: 1px solid #1f1f30;
+  }
+  .slider-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .slider-title { font-size: 9px; color: #666; }
+  .slider-current { font-size: 10px; font-weight: 600; color: #4a9eff; }
+  .track { height: 3px; background: #1f1f30; border-radius: 2px; position: relative; }
+  .fill { height: 3px; background: #4a9eff; border-radius: 2px; width: 14.3%; }
+  .thumb { width: 12px; height: 12px; background: #fff; border-radius: 50%; position: absolute; top: -4.5px; left: 11%; box-shadow: 0 2px 6px rgba(0,0,0,0.6); }
+  .day-ticks { display: flex; justify-content: space-between; margin-top: 6px; }
+  .day-tick { font-size: 8px; color: #555; text-align: center; }
+
+  /* ── FOOTER ── */
+  .footer {
+    padding: 8px 12px 10px;
+    border-top: 1px solid #1f1f30;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .threshold-label { font-size: 9px; color: #888; }
+  .threshold-val { font-size: 13px; font-weight: 700; color: #fff; }
+  .threshold-unit { font-size: 9px; color: #666; }
+  .legend { display: flex; gap: 6px; margin-left: auto; align-items: center; }
+  .leg { display: flex; align-items: center; gap: 3px; }
+  .leg-dot { width: 8px; height: 8px; border-radius: 2px; }
+  .leg-text { font-size: 8px; color: #888; }
+  .gear-btn { font-size: 16px; margin-left: 6px; cursor: pointer; }
+
+  /* ── SETTINGS SHEET ── */
+  .sheet {
+    width: 300px;
+    background: #13131f;
+    border-radius: 20px;
+    border: 1.5px solid #2a2a3e;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+    align-self: center;
+  }
+  .sheet-handle { width: 36px; height: 4px; background: #333; border-radius: 2px; margin: 10px auto 0; }
+  .sheet-header { padding: 14px 16px 10px; border-bottom: 1px solid #1f1f30; }
+  .sheet-title { font-size: 15px; font-weight: 700; color: #fff; }
+  .sheet-sub { font-size: 11px; color: #666; margin-top: 2px; }
+
+  .setting-row {
+    padding: 14px 16px;
+    border-bottom: 1px solid #1a1a2a;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .setting-name { font-size: 13px; color: #ccc; }
+  .setting-desc { font-size: 10px; color: #666; margin-top: 2px; }
+  .stepper { display: flex; align-items: center; gap: 8px; }
+  .step-btn { width: 26px; height: 26px; background: #2a2a3e; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #aaa; cursor: pointer; }
+  .step-val { font-size: 14px; font-weight: 700; color: #fff; min-width: 44px; text-align: center; }
+  .seg { display: flex; background: #1a1a2a; border-radius: 8px; padding: 2px; gap: 2px; }
+  .seg-btn { padding: 5px 10px; border-radius: 6px; font-size: 11px; color: #888; cursor: pointer; }
+  .seg-btn.active { background: #4a9eff; color: #fff; font-weight: 600; }
+
+  /* ── ANNOTATION PANEL ── */
+  .annotations {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 220px;
+    align-self: flex-start;
+    padding-top: 60px;
+  }
+  .ann { display: flex; gap: 10px; align-items: flex-start; }
+  .ann-arrow { font-size: 18px; color: #4a9eff; flex-shrink: 0; padding-top: 1px; }
+  .ann-text { font-size: 12px; color: #aaa; line-height: 1.5; }
+  .ann-text strong { color: #ddd; }
+
+  /* error states strip */
+  .error-strip {
+    background: #2a1a1a;
+    border: 1px solid #5a2a2a;
+    border-radius: 8px;
+    padding: 7px 10px;
+    margin: 6px 10px 0;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .err-icon { font-size: 13px; }
+  .err-text { font-size: 10px; color: #ff9999; flex: 1; }
+  .err-btn { font-size: 10px; color: #4a9eff; font-weight: 600; }
+
+</style>
+</head>
+<body>
+
+<h2>FPV Blast — UI Structure</h2>
+<p class="subtitle">Main screen + Settings sheet · all components annotated</p>
+
+<div class="scene">
+
+  <!-- PHONE -->
+  <div class="phone">
+    <div class="sb"><span>21:37</span><span>5G ▮▮▮</span></div>
+
+    <!-- Header -->
+    <div class="app-header">
+      <div class="header-row">
+        <div class="app-name">FPV BLAST</div>
+        <div class="header-date">Mon 23 Mar</div>
+      </div>
+      <div class="loc-row">
+        <div class="loc-dot"></div>
+        <div class="loc-text">Kraków, PL · 50.06°N 19.94°E</div>
+      </div>
+    </div>
+
+    <!-- Summary strip -->
+    <div class="summary-strip">
+      <div class="sum-card" style="background:#1a2e1a;border:1px solid #2a4a2a;">
+        <div class="sum-label" style="color:#4aff80;">NOW · 10m</div>
+        <div class="sum-value" style="color:#4aff80;">18</div>
+        <div class="sum-sub" style="color:#4aff80;">km/h ✓ OK</div>
+      </div>
+      <div class="sum-card" style="background:#2e2a1a;border:1px solid #4a4020;">
+        <div class="sum-label" style="color:#ffd040;">PEAK · 120m</div>
+        <div class="sum-value" style="color:#ffd040;">29</div>
+        <div class="sum-sub" style="color:#ffd040;">km/h ⚠ Caution</div>
+      </div>
+      <div class="sum-card" style="background:#1a1a2e;border:1px solid #2a2a4a;">
+        <div class="sum-label" style="color:#aaa;">BEST TODAY</div>
+        <div class="sum-value" style="color:#fff;">14:00</div>
+        <div class="sum-sub" style="color:#aaa;">3h window</div>
+      </div>
+    </div>
+
+    <!-- Error banner (shown contextually) -->
+    <div class="error-strip">
+      <span class="err-icon">⚠️</span>
+      <span class="err-text">Limited data — 3 of 6 sources available</span>
+      <span class="err-btn">Retry</span>
+    </div>
+
+    <!-- Heatmap -->
+    <div class="heatmap-area">
+      <div class="chart-meta">
+        <span class="chart-meta-label">Wind speed by altitude · Mon 23 Mar</span>
+        <span class="unit-pill">km/h</span>
+      </div>
+      <div class="chart-body">
+        <div class="y-axis-col" id="yaxis"></div>
+        <div style="flex:1">
+          <div class="heatmap-grid" id="heatmap"></div>
+          <div class="x-axis-row">
+            <span class="x-tick">00:00</span>
+            <span class="x-tick">06:00</span>
+            <span class="x-tick">12:00</span>
+            <span class="x-tick">18:00</span>
+            <span class="x-tick">23:00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time slider -->
+    <div class="slider-area">
+      <div class="slider-top">
+        <span class="slider-title">7-day window · drag to navigate</span>
+        <span class="slider-current">Mon 23 Mar</span>
+      </div>
+      <div class="track">
+        <div class="fill"></div>
+        <div class="thumb"></div>
+      </div>
+      <div class="day-ticks">
+        <span class="day-tick">Mon<br>23</span>
+        <span class="day-tick">Tue<br>24</span>
+        <span class="day-tick">Wed<br>25</span>
+        <span class="day-tick">Thu<br>26</span>
+        <span class="day-tick">Fri<br>27</span>
+        <span class="day-tick">Sat<br>28</span>
+        <span class="day-tick">Sun<br>29</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span class="threshold-label">Threshold</span>
+      <span class="threshold-val">25</span>
+      <span class="threshold-unit">km/h</span>
+      <div class="legend">
+        <div class="leg"><div class="leg-dot" style="background:#4aff80"></div><span class="leg-text">OK</span></div>
+        <div class="leg"><div class="leg-dot" style="background:#ffd040"></div><span class="leg-text">±20%</span></div>
+        <div class="leg"><div class="leg-dot" style="background:#ff4444"></div><span class="leg-text">No-fly</span></div>
+      </div>
+      <span class="gear-btn">⚙️</span>
+    </div>
+  </div>
+
+  <!-- SETTINGS SHEET -->
+  <div>
+    <div style="text-align:center;margin-bottom:8px;font-size:11px;color:#555;">⚙️ Settings (modal sheet)</div>
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">Settings</div>
+        <div class="sheet-sub">FPV Blast preferences</div>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-name">Wind Threshold</div>
+          <div class="setting-desc">Yellow zone starts at 80% of this value</div>
+        </div>
+        <div class="stepper">
+          <div class="step-btn">−</div>
+          <div class="step-val">25 km/h</div>
+          <div class="step-btn">+</div>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-name">Wind Speed Unit</div>
+          <div class="setting-desc">Applied across all values</div>
+        </div>
+        <div class="seg">
+          <div class="seg-btn active">km/h</div>
+          <div class="seg-btn">m/s</div>
+          <div class="seg-btn">kn</div>
+        </div>
+      </div>
+
+      <div class="setting-row" style="border-bottom:none;">
+        <div>
+          <div class="setting-name">Data Sources</div>
+          <div class="setting-desc">6 models · outlier-filtered mean</div>
+        </div>
+        <div style="font-size:11px;color:#4aff80;">6 / 6 ✓</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANNOTATIONS -->
+  <div class="annotations">
+    <div class="ann"><span class="ann-arrow">↑</span><div class="ann-text"><strong>App header</strong><br>App name, GPS location name, current date</div></div>
+    <div class="ann"><span class="ann-arrow">↑</span><div class="ann-text"><strong>Summary strip</strong><br>Current wind @ 10m · Peak altitude · Best flying window today</div></div>
+    <div class="ann"><span class="ann-arrow">↑</span><div class="ann-text"><strong>Error/warning banner</strong><br>Shown only when data is limited or stale</div></div>
+    <div class="ann"><span class="ann-arrow">↑</span><div class="ann-text"><strong>Wind heatmap</strong><br>X = hours (00:00–23:00), Y = 10m–180m<br>Cells coloured green / yellow / red</div></div>
+    <div class="ann"><span class="ann-arrow">↑</span><div class="ann-text"><strong>7-day slider</strong><br>Drag to shift 24h window; day ticks below</div></div>
+    <div class="ann"><span class="ann-arrow">↑</span><div class="ann-text"><strong>Threshold footer</strong><br>Shows active threshold + legend + ⚙ opens Settings sheet</div></div>
+  </div>
+
+</div>
+
+<script>
+const T = 25;
+
+// Y axis
+const yAxis = document.getElementById('yaxis');
+const heights = [];
+for (let h = 180; h >= 10; h -= 10) heights.push(h);
+const tickHeights = [180, 140, 100, 60, 20];
+heights.forEach(h => {
+  const el = document.createElement('div');
+  el.className = 'y-tick';
+  el.textContent = tickHeights.includes(h) ? h + 'm' : '';
+  yAxis.appendChild(el);
+});
+
+// Heatmap
+const grid = document.getElementById('heatmap');
+heights.forEach((h, hi) => {
+  const row = document.createElement('div');
+  row.className = 'heatmap-row';
+  for (let t = 0; t < 24; t++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const wind = 10 + (h / 180) * 22 + Math.sin(t * 0.35 + hi * 0.4) * 7 + Math.random() * 3;
+    let bg;
+    if (wind < T * 0.8) {
+      const i = wind / (T * 0.8);
+      bg = `rgba(74,255,128,${0.35 + i * 0.55})`;
+    } else if (wind < T) {
+      const i = (wind - T * 0.8) / (T * 0.2);
+      bg = `rgba(255,210,50,${0.5 + i * 0.4})`;
+    } else {
+      const i = Math.min((wind - T) / T, 1);
+      bg = `rgba(255,60,60,${0.5 + i * 0.45})`;
+    }
+    cell.style.background = bg;
+    row.appendChild(cell);
+  }
+  grid.appendChild(row);
+});
+</script>
+</body>
+</html>
