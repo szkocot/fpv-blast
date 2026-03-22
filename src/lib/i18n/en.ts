@@ -1,0 +1,31 @@
+// src/lib/i18n/en.ts
+import type { WindUnit, AppAppearance } from '../types';
+
+export const t = {
+  appName: 'FPV BLAST',
+  fetchingForecast: 'Fetching forecast…',
+  couldNotLoad: 'Could not load forecast — check your connection.',
+  limitedData: (n: number) => `Limited data — ${n} of 6 sources available`,
+  locationRequired: 'Location access is required to fetch local wind forecasts.',
+  locationHelp: 'Please enable location in your browser settings and reload.',
+  retry: 'Retry',
+  settings: 'Settings',
+  done: 'Done',
+  windThreshold: 'Wind Threshold',
+  thresholdHint: 'Yellow zone starts at 80% of this value',
+  windSpeedUnit: 'Wind Speed Unit',
+  appearance: 'Appearance',
+  dataSources: 'Data Sources',
+  dataSourcesHint: 'Open-Meteo free tier · outlier-filtered mean',
+  ok: '✓ OK',
+  caution: '⚠ Caution',
+  noflyzone: '✗ No-fly',
+  nowAt10m: 'NOW · 10m',
+  peak: 'PEAK',
+  bestToday: 'BEST TODAY',
+  bestLow: 'BEST · LOW',
+  noWindow: 'No window',
+  hWindow: (n: number) => `${n}h window`,
+  units: { kmh: 'km/h', ms: 'm/s', knots: 'kn' } as Record<WindUnit, string>,
+  appearances: { auto: 'Auto', light: 'Light', dark: 'Dark' } as Record<AppAppearance, string>,
+};
