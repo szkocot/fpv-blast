@@ -8,7 +8,7 @@
   import type { GeoResult } from '../services/geocoder';
   import type { CustomLocation } from '../types';
 
-  export let initialLocation: CustomLocation | null;
+  export let initialLocation: CustomLocation | null = null;
   export let onConfirm: (loc: CustomLocation) => void;
   export let onClose: () => void;
 
@@ -21,6 +21,7 @@
   let searchResults: GeoResult[] = [];
   let searchAttempted = false;
   let searchTimeout: ReturnType<typeof setTimeout>;
+  let isFlyingTo = false;
 
   function formatCoords(lat: number, lon: number): string {
     return `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}  ${Math.abs(lon).toFixed(2)}°${lon >= 0 ? 'E' : 'W'}`;
@@ -39,6 +40,7 @@
     searchQuery = '';
     searchResults = [];
     pickedLocation = { lat: result.lat, lon: result.lon, name: result.name };
+    isFlyingTo = true;
     map?.flyTo({ center: [result.lon, result.lat], zoom: 12 });
   }
 
@@ -54,6 +56,7 @@
 
     map.on('moveend', async () => {
       if (!map) return;
+      if (isFlyingTo) { isFlyingTo = false; return; }
       const c = map.getCenter();
       const name = await reverseGeocode(c.lat, c.lng);
       pickedLocation = { lat: c.lat, lon: c.lng, name };
@@ -63,6 +66,7 @@
   });
 
   onDestroy(() => {
+    clearTimeout(searchTimeout);
     map?.remove();
   });
 </script>
