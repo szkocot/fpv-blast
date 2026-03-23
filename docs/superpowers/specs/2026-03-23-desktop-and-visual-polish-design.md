@@ -21,20 +21,18 @@ The app remains a single-screen layout on all screen sizes; no routing or struct
 
 ### Change
 
-Remove `max-width: 480px` from `#app` in `app.css`. The app shell already uses `display: flex; flex-direction: column; height: 100%` — without the cap it will fill the viewport on any width.
+Remove `max-width: 480px` from the `#app` selector in `app.css`. (`#app` is the Vite host element, not `.app-shell` inside `App.svelte` — they are different elements.) The app shell already uses `display: flex; flex-direction: column; height: 100%` — without the cap it will fill the viewport on any width.
 
 ### Responsive font and spacing scaling
 
-Add a `@media (min-width: 768px)` block in `app.css` that increases axis label sizes and the settings icon size for desktop. No layout restructuring — same vertical stack, just proportionally larger text/icons.
+Add a `@media (min-width: 768px)` block in `app.css` that scales up the settings gear icon and slider text. No layout restructuring — same vertical stack on all screen widths.
 
 | Element | Mobile | Desktop (≥ 768 px) |
 |---|---|---|
-| Y / X axis labels (canvas) | 10 px | 13 px |
 | Slider hint / tick text | 9–10 px | 12–13 px |
-| Settings ⚙ icon | 18 px | 26 px |
-| Heatmap canvas label area (`LABEL_W`) | 36 px | 50 px |
+| Settings ⚙ icon (`ThresholdFooter`) | 18 px | 26 px |
 
-The canvas-drawn labels (`HeatmapCanvas.svelte`) must read a CSS custom property or use `window.innerWidth` to pick the correct font size at draw time.
+Canvas-drawn labels (heatmap axis text) are handled separately inside `HeatmapCanvas.svelte` using `canvas.offsetWidth` (the CSS layout width, not the pixel-buffer width, which avoids device-pixel-ratio issues). See Section 2.
 
 ---
 
@@ -42,68 +40,146 @@ The canvas-drawn labels (`HeatmapCanvas.svelte`) must read a CSS custom property
 
 ### Cell rendering
 
-Replace the current `ctx.fillRect(x, y, cellW - 0.5, cellH - 0.5)` with rounded, gapless cells drawn via `ctx.roundRect`.
+Replace the current `ctx.fillRect(x, y, cellW - 0.5, cellH - 0.5)` approach with rounded cells that have a 2 px gap between them.
 
-**Parameters:**
-- Gap between cells: `2 px`
-- Corner radius: `4 px`
-- Cell size: `(chartW - gap × (cols−1)) / cols` × `(chartH - gap × (rows−1)) / rows`
+**Constants:**
+```typescript
+const GAP    = 2;   // px between cells
+const RADIUS = 4;   // px corner radius
+```
+
+**Cell dimensions** (computed inside `draw()` after canvas is sized):
+```typescript
+const cellW = (chartW - GAP * (cols - 1)) / cols;
+const cellH = (chartH - GAP * (rows - 1)) / rows;
+```
+
+**Cell placement stride** (origin of the next cell, not the draw size):
+```typescript
+const strideX = cellW + GAP;
+const strideY = cellH + GAP;
+```
+
+For column `t` and height row `hi` (where `hi = 0` is 10 m at the bottom):
+```typescript
+const x = t * strideX;
+const y = chartH - (hi + 1) * cellH - hi * GAP;  // flip: low height at bottom
+```
 
 ### 2-D bilinear gradient per cell
 
-Each cell blends colour from four corners (current hour × current height, next hour × current height, current hour × next height, next hour × next height).
+Each cell blends colour from four corners (current/next hour × current/next height). Draw order per cell:
 
-Implemented as two overlaid canvas gradients per cell inside a `roundRect` clip:
-
-1. **Vertical pass** — `createLinearGradient(0, y, 0, y+cellH)` from the height-averaged top colour to the height-averaged bottom colour.
-2. **Horizontal overlay** — `createLinearGradient(x, 0, x+cellW, 0)` at `opacity ≈ 0.35`, blending left-edge to right-edge colours.
-
-No explicit grid lines are drawn. The `2 px` gaps between cells provide visual separation.
-
-### Canvas label font size
-
-At draw time, choose font size based on canvas width:
 ```typescript
-const fontSize = canvas.width > 600 ? 13 : 10;
-const labelW   = canvas.width > 600 ? 50 : 36;
+ctx.save();
+ctx.beginPath();
+ctx.roundRect(x, y, cellW, cellH, RADIUS);
+ctx.clip();                          // clip both passes to rounded shape
+
+// Pass 1 — vertical gradient (height axis)
+const gV = ctx.createLinearGradient(0, y, 0, y + cellH);
+gV.addColorStop(0, colorTopAvg);    // average of top-left and top-right corners
+gV.addColorStop(1, colorBotAvg);    // average of bottom-left and bottom-right corners
+ctx.fillStyle = gV;
+ctx.fillRect(x, y, cellW, cellH);
+
+// Pass 2 — horizontal overlay (time axis), partial opacity
+const gH = ctx.createLinearGradient(x, 0, x + cellW, 0);
+gH.addColorStop(0, colorLeftAvg_at35pctOpacity);
+gH.addColorStop(1, colorRightAvg_at35pctOpacity);
+ctx.fillStyle = gH;
+ctx.fillRect(x, y, cellW, cellH);
+
+ctx.restore();
 ```
+
+`colorTopAvg` = `lerpRGBA(colors[t][nextHi], colors[nextT][nextHi], 0.5)`, and so on for the other three averaged edges. `lerpRGBA` does component-wise linear interpolation.
+
+No explicit grid lines are drawn. The `GAP` provides visual separation.
+
+### Responsive canvas label font size
+
+Inside `draw()`, choose font size based on `canvas.offsetWidth` (CSS layout width, device-pixel-ratio agnostic):
+
+```typescript
+const isDesktop = canvas.offsetWidth > 600;
+const fontSize  = isDesktop ? 13 : 10;
+const LABEL_W   = isDesktop ? 50 : 36;
+const LABEL_H   = isDesktop ? 28 : 24;
+```
+
+Pass `fontSize` to `ctx.font` for both axis label passes.
 
 ---
 
 ## 3. Coloured Slider Track (`TimeSlider.svelte`)
 
-### Approach
+### Structural changes
 
-Replace the CSS `::before` track with a `<canvas>` element absolutely positioned inside the existing `.track` div. The canvas is drawn once on mount and redrawn only when `thresholdKmh` changes (passed as a new prop).
-
-### What is drawn
-
-A single horizontal `createLinearGradient` with 168 colour stops (one per forecast hour). Each stop's colour is the average `windColor` across all 18 display heights at that hour.
-
-```
-stop position = hourIndex / 167
-stop colour   = average windColor(speed[hourIndex][0..17], thresholdKmh)
-```
-
-Average colour: arithmetic mean of the R, G, B, A components across all 18 heights.
+- **Remove** the `.fill` div and its CSS entirely (the blue filled portion of the current track).
+- **Remove** the `::before` grey track pseudo-element CSS.
+- **Add** a `<canvas bind:this={trackCanvas}></canvas>` absolutely positioned to fill the track area (`inset: 5px 0; border-radius: 4px`).
+- **Add** a `<div class="window-highlight">` (white border box, no fill) to show the current 24 h window.
+- The `.thumb` div is unchanged.
 
 ### New prop
 
-`TimeSlider` receives a new prop:
 ```typescript
-export let grid: WindGrid;          // already exists — used for times
-export let thresholdKmh: number;    // NEW — triggers redraw when changed
+export let thresholdKmh: number;   // NEW — triggers track redraw
 ```
 
-`App.svelte` passes `thresholdKmh={$settingsStore.thresholdKmh}` to `TimeSlider`.
+`App.svelte` passes `thresholdKmh={$settingsStore.thresholdKmh}` to `<TimeSlider>`.
 
-### Window highlight
+### Canvas draw logic
 
-A `<div class="window-highlight">` (white border box, no fill) is absolutely positioned over the canvas to show the current 24 h window. Width = `24/168 × 100%`, left = `hourOffset/168 × 100%`. This replaces the current filled blue track.
+Draw once on `onMount` and again reactively whenever `thresholdKmh` changes:
 
-### Thumb
+```typescript
+let trackCanvas: HTMLCanvasElement;
 
-Unchanged — white circle, blue border, absolute position over the track.
+function drawTrack() {
+  if (!trackCanvas) return;
+  const W = trackCanvas.parentElement!.clientWidth;
+  const H = trackCanvas.parentElement!.clientHeight - 10;
+  trackCanvas.width = W;
+  trackCanvas.height = H;
+  const ctx = trackCanvas.getContext('2d')!;
+
+  const total = Math.min(grid.times.length, 168);  // guard for short forecasts
+  if (total < 2) return;
+
+  const grad = ctx.createLinearGradient(0, 0, W, 0);
+  for (let t = 0; t < total; t++) {
+    grad.addColorStop(t / (total - 1), avgWindColor(t));
+  }
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+}
+
+$: thresholdKmh, drawTrack();   // reactive redraw when threshold changes
+
+onMount(() => { drawTrack(); });
+```
+
+`avgWindColor(t)` computes the arithmetic mean of R, G, B, A across all 18 heights and returns a CSS `rgba(...)` string using `windColor(speed, thresholdKmh)` for each height. If `grid.times.length < 168`, only that many stops are drawn — the gradient simply ends at the last available hour rather than leaving a gap.
+
+### Window-highlight positioning
+
+```svelte
+<div
+  class="window-highlight"
+  style="left: {(hourOffset / 168 * 100).toFixed(2)}%; width: {(24 / 168 * 100).toFixed(2)}%"
+></div>
+```
+
+CSS:
+```css
+.window-highlight {
+  position: absolute; top: 3px; bottom: 3px;
+  border: 2px solid rgba(255,255,255,0.75);
+  border-radius: 4px; pointer-events: none;
+}
+```
 
 ---
 
@@ -111,10 +187,10 @@ Unchanged — white circle, blue border, absolute position over the track.
 
 | File | Change |
 |---|---|
-| `src/app.css` | Remove `max-width: 480px`; add `@media (min-width: 768px)` scaling block |
-| `src/lib/components/HeatmapCanvas.svelte` | Rounded cells, bilinear gradient, responsive font size |
-| `src/lib/components/TimeSlider.svelte` | Canvas gradient track, new `thresholdKmh` prop, window-highlight div |
-| `src/App.svelte` | Pass `thresholdKmh` to `TimeSlider` |
+| `src/app.css` | Remove `max-width: 480px`; add `@media (min-width: 768px)` for gear icon and slider text sizes |
+| `src/lib/components/HeatmapCanvas.svelte` | Rounded cells with gap, bilinear gradient, responsive font/label sizes via `canvas.offsetWidth` |
+| `src/lib/components/TimeSlider.svelte` | Remove `.fill` div and `::before` track; add canvas gradient track; add `thresholdKmh` prop; add window-highlight div |
+| `src/App.svelte` | Pass `thresholdKmh={$settingsStore.thresholdKmh}` to `<TimeSlider>` |
 
 No new files. No changes to stores, services, or tests.
 
@@ -124,8 +200,9 @@ No new files. No changes to stores, services, or tests.
 
 No new unit tests required (canvas rendering is visual). Existing 39 tests must continue to pass. Manual verification:
 
-- Desktop (≥ 768 px): app fills full width, labels readable, ⚙ icon clearly tappable.
+- Desktop (≥ 768 px): app fills full width, axis labels readable at 13 px, ⚙ icon clearly tappable at 26 px.
 - Mobile (< 768 px): layout and label sizes unchanged from current.
-- Heatmap: rounded cells visible, no grid lines, colour blends smoothly across both axes.
-- Slider: track shows wind colour gradient across 7 days; dragging thumb updates the window-highlight box and heatmap.
-- Threshold change in settings: slider track redraws with new colour boundaries.
+- Heatmap: rounded cells visible with 2 px gaps, no grid lines, colour blends smoothly across both axes.
+- Slider track: shows wind colour gradient across 7 days; window-highlight box moves as thumb is dragged.
+- Threshold change: slider track redraws with updated colour boundaries.
+- Short forecast (< 168 hours): slider track draws to the last available hour without errors.
