@@ -2,7 +2,7 @@
 <script lang="ts">
   import { t } from '../i18n';
   import { convertFromKmh, convertToKmh, thresholdStep } from '../stores/settingsStore';
-  import type { Settings, WindUnit, AppAppearance, AppLanguage, TempUnit, LocationMode, CustomLocation } from '../types';
+  import type { Settings, WindUnit, AppAppearance, AppLanguage, TempUnit, LocationMode } from '../types';
 
   export let settings: Settings;
   export let modelCount: number;

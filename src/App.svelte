@@ -52,6 +52,7 @@
   }
 
   function requestLocation() {
+    gpsError = false;
     const mode = $settingsStore.locationMode;
     const custom = $settingsStore.customLocation;
 
