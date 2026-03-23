@@ -133,35 +133,126 @@
 </div>
 
 <style>
-  .slider-area { padding: 8px 12px 6px; border-top: 1px solid var(--border); }
-  .top-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-  .hint    { font-size: 11px; color: var(--text-muted); }
-  .current { font-size: 12px; font-weight: 600; color: var(--blue); }
+  .slider-area {
+    padding: 10px 12px 10px;
+    border-top: 1px solid var(--border);
+  }
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+  .current {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--blue);
+    text-align: right;
+  }
 
   .track {
-    position: relative; height: 16px; cursor: pointer;
-    display: flex; align-items: center;
+    position: relative;
+    height: 22px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
     touch-action: none;
   }
   .track-canvas {
-    position: absolute; inset: 5px 0;
-    border-radius: 4px; pointer-events: none;
+    position: absolute;
+    inset: 5px 0;
+    border-radius: 999px;
+    pointer-events: none;
   }
   .window-highlight {
-    position: absolute; top: 3px; bottom: 3px;
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
     border: 2px solid rgba(255,255,255,0.75);
-    border-radius: 4px; pointer-events: none;
+    border-radius: 999px;
+    pointer-events: none;
   }
   .thumb {
-    position: absolute; width: 16px; height: 16px;
-    background: #fff; border-radius: 50%;
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
     box-shadow: 0 1px 4px rgba(0,0,0,0.4);
     transform: translateX(-50%);
     pointer-events: none;
   }
 
   .day-ticks {
-    display: flex; justify-content: space-between; margin-top: 6px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 10px;
   }
-  .tick { font-size: 11px; color: var(--text-muted); text-align: center; line-height: 1.3; }
+  .tick {
+    flex: 1;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.35;
+  }
+
+  @media (min-width: 768px) {
+    .slider-area {
+      padding: 14px 18px 14px;
+    }
+
+    .top-row {
+      margin-bottom: 14px;
+    }
+
+    .hint {
+      font-size: 12px;
+    }
+
+    .current {
+      font-size: 15px;
+    }
+
+    .track {
+      height: 24px;
+    }
+
+    .day-ticks {
+      margin-top: 12px;
+    }
+
+    .tick {
+      font-size: 12px;
+      line-height: 1.4;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .slider-area {
+      padding: 16px 20px 16px;
+    }
+
+    .hint {
+      font-size: 13px;
+    }
+
+    .current {
+      font-size: 16px;
+    }
+
+    .day-ticks {
+      margin-top: 14px;
+    }
+
+    .tick {
+      font-size: 13px;
+    }
+  }
 </style>
