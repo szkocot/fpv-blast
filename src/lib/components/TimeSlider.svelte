@@ -113,8 +113,8 @@
 <style>
   .slider-area { padding: 8px 12px 6px; border-top: 1px solid var(--border); }
   .top-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-  .hint    { font-size: 9px; color: var(--text-muted); }
-  .current { font-size: 10px; font-weight: 600; color: var(--blue); }
+  .hint    { font-size: 11px; color: var(--text-muted); }
+  .current { font-size: 12px; font-weight: 600; color: var(--blue); }
 
   .track {
     position: relative; height: 16px; cursor: pointer;
@@ -141,5 +141,5 @@
   .day-ticks {
     display: flex; justify-content: space-between; margin-top: 6px;
   }
-  .tick { font-size: 9px; color: var(--text-muted); text-align: center; line-height: 1.3; }
+  .tick { font-size: 11px; color: var(--text-muted); text-align: center; line-height: 1.3; }
 </style>

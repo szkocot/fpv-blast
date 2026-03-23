@@ -46,8 +46,8 @@
 
     // Responsive label sizes based on CSS layout width (avoids DPR issues)
     const isDesktop = canvas.offsetWidth > 600;
-    const fontSize  = isDesktop ? 13 : 10;
-    const LABEL_W   = isDesktop ? 50 : 36;
+    const fontSize  = isDesktop ? 13 : 11;
+    const LABEL_W   = isDesktop ? 50 : 38;
     const LABEL_H   = isDesktop ? 28 : 24;
 
     const chartW = W - LABEL_W;
@@ -140,7 +140,7 @@
     if (!canvas) return;
     const parent = canvas.parentElement!;
     canvas.width  = parent.clientWidth;
-    canvas.height = Math.round(parent.clientWidth * 0.65);
+    canvas.height = parent.clientHeight - 8;  // 8px = top padding of .canvas-wrap
     draw();
   }
 
@@ -160,6 +160,7 @@
 <style>
   .canvas-wrap {
     width: 100%;
+    height: 100%;
     padding: 8px 0 0;
   }
   canvas {

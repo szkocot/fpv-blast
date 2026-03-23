@@ -69,9 +69,9 @@
   .card.yellow { background: rgba(255,208,50,0.08);  border-color: rgba(255,208,50,0.2); }
   .card.red    { background: rgba(255,60,60,0.08);   border-color: rgba(255,60,60,0.2); }
 
-  .label { font-size: 8px; font-weight: 600; letter-spacing: 0.4px; color: var(--text-muted); }
+  .label { font-size: 10px; font-weight: 600; letter-spacing: 0.4px; color: var(--text-muted); }
   .value { font-size: 22px; font-weight: 800; line-height: 1; color: var(--text); }
-  .sub   { font-size: 9px; color: var(--text-muted); }
+  .sub   { font-size: 11px; color: var(--text-muted); }
   .red-text { color: var(--red); }
 
   .card.green .value  { color: var(--green); }
