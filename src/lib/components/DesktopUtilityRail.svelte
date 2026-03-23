@@ -126,19 +126,19 @@
 
   .legend-chip.ok {
     color: var(--green);
-    background: rgba(74,255,128,0.08);
-    border-color: rgba(74,255,128,0.2);
+    background: var(--ok-tint);
+    border-color: var(--ok-border);
   }
 
   .legend-chip.caution {
     color: var(--yellow);
-    background: rgba(255,208,50,0.08);
-    border-color: rgba(255,208,50,0.2);
+    background: var(--warn-tint);
+    border-color: var(--warn-border);
   }
 
   .legend-chip.nofly {
     color: var(--red);
-    background: rgba(255,60,60,0.08);
-    border-color: rgba(255,60,60,0.2);
+    background: var(--danger-tint);
+    border-color: var(--danger-border);
   }
 </style>

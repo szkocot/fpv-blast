@@ -72,9 +72,9 @@
     border-radius: 10px;
     border: 1px solid transparent;
   }
-  .card.green  { background: rgba(74,255,128,0.08); border-color: rgba(74,255,128,0.2); }
-  .card.yellow { background: rgba(255,208,50,0.08);  border-color: rgba(255,208,50,0.2); }
-  .card.red    { background: rgba(255,60,60,0.08);   border-color: rgba(255,60,60,0.2); }
+  .card.green  { background: var(--ok-tint); border-color: var(--ok-border); }
+  .card.yellow { background: var(--warn-tint);  border-color: var(--warn-border); }
+  .card.red    { background: var(--danger-tint); border-color: var(--danger-border); }
 
   .label { font-size: 10px; font-weight: 600; letter-spacing: 0.4px; color: var(--text-muted); }
   .value { font-size: 22px; font-weight: 800; line-height: 1; color: var(--text); }
