@@ -76,9 +76,9 @@
   .card.yellow { background: var(--warn-tint);  border-color: var(--warn-border); }
   .card.red    { background: var(--danger-tint); border-color: var(--danger-border); }
 
-  .label { font-size: 10px; font-weight: 600; letter-spacing: 0.4px; color: var(--text-muted); }
+  .label { font-size: 12px; font-weight: 600; letter-spacing: 0.4px; color: var(--text-muted); }
   .value { font-size: 22px; font-weight: 800; line-height: 1; color: var(--text); }
-  .sub   { font-size: 11px; color: var(--text-muted); }
+  .sub   { font-size: 12px; color: var(--text-muted); }
   .red-text { color: var(--red); }
 
   .card.green .value  { color: var(--green); }

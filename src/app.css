@@ -7,7 +7,7 @@
   --surface2:  #0d0d1a;
   --border:    #1f1f30;
   --text:      #e0e0e0;
-  --text-muted:#888;
+  --text-muted:#aaa;
   --blue:      #4a9eff;
   --green:     #4aff80;
   --yellow:    #ffd040;
@@ -71,7 +71,7 @@
   --surface2:  #0d0d1a;
   --border:    #1f1f30;
   --text:      #e0e0e0;
-  --text-muted:#888;
+  --text-muted:#aaa;
 }
 
 html, body {

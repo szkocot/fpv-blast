@@ -46,7 +46,7 @@
 
     // Responsive label sizes based on CSS layout width (avoids DPR issues)
     const isDesktop = canvas.offsetWidth > 600;
-    const fontSize  = isDesktop ? 13 : 11;
+    const fontSize  = isDesktop ? 13 : 12;
     const LABEL_W   = isDesktop ? 50 : 38;
     const LABEL_H   = isDesktop ? 28 : 24;
 
@@ -113,7 +113,7 @@
     }
 
     // Y axis labels (every 20 m = every 2nd height index)
-    ctx.fillStyle = '#888';
+    ctx.fillStyle = '#aaa';
     ctx.font = `${fontSize}px -apple-system, sans-serif`;
     ctx.textAlign = 'right';
     for (let hi = 0; hi < rows; hi++) {

@@ -27,8 +27,8 @@
   .app-name { font-size: 16px; font-weight: 900; color: var(--blue); letter-spacing: 1.5px; }
   .loc-row  { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
   .dot      { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-  .loc      { font-size: 11px; color: var(--text-muted); }
-  .date     { font-size: 11px; color: var(--text-muted); }
+  .loc      { font-size: 13px; color: var(--text-muted); }
+  .date     { font-size: 13px; color: var(--text-muted); }
 
   @media (min-width: 1024px) {
     header {
@@ -48,7 +48,7 @@
 
     .loc,
     .date {
-      font-size: 12px;
+      font-size: 13px;
     }
   }
 </style>

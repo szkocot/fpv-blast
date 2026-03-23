@@ -57,7 +57,7 @@
   }
 
   .label {
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -82,7 +82,7 @@
     padding: 0 8px;
     border: 1px solid transparent;
     border-radius: 999px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     line-height: 1;
   }
@@ -123,7 +123,7 @@
   }
 
   .gear {
-    font-size: 16px;
+    font-size: 18px;
     line-height: 1;
   }
 </style>
