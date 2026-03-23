@@ -8,6 +8,8 @@ function makeGrid(value: number, hours = 48): WindGrid {
     data: Array.from({ length: hours }, () => Array(18).fill(value)),
     times: Array.from({ length: hours }, (_, i) => new Date(Date.now() + i * 3600000)),
     modelCount: 6,
+    temperature: Array(hours).fill(15),
+    weatherCode: Array(hours).fill(0),
   };
 }
 

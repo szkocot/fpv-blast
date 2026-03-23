@@ -20,6 +20,11 @@ describe('buildUrl', () => {
   it('requests 7 forecast days', () => {
     expect(buildUrl(0, 0, 'best_match')).toContain('forecast_days=7');
   });
+  it('includes temperature and weather code variables', () => {
+    const url = buildUrl(0, 0, 'best_match');
+    expect(url).toContain('temperature_2m');
+    expect(url).toContain('weather_code');
+  });
 });
 
 describe('decodeResponse', () => {
@@ -30,6 +35,8 @@ describe('decodeResponse', () => {
       wind_speed_80m:  [20.5, 21.0],
       wind_speed_120m: [25.0, 26.0],
       wind_speed_180m: [30.0, 31.0],
+      temperature_2m:  [12.0, 13.0],
+      weather_code:    [1, 2],
     }
   };
   it('parses wind speeds', () => {
@@ -41,5 +48,10 @@ describe('decodeResponse', () => {
     const r = decodeResponse(json);
     expect(r.times[0]).toBeInstanceOf(Date);
     expect(r.times.length).toBe(2);
+  });
+  it('parses temperature and weather code', () => {
+    const r = decodeResponse(json);
+    expect(r.temperature[0]).toBeCloseTo(12.0);
+    expect(r.weatherCode[0]).toBe(1);
   });
 });

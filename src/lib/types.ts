@@ -9,6 +9,8 @@ export interface WindGrid {
   data: number[][];   // [timeIndex 0..167][heightIndex 0..17] = km/h
   times: Date[];      // 168 entries
   modelCount: number;
+  temperature: number[];
+  weatherCode: number[];
 }
 
 export interface FlyingWindow {

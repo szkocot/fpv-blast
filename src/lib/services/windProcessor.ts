@@ -2,10 +2,12 @@
 import type { WindGrid } from '../types';
 
 export interface ModelData {
-  at10m:  number[];
-  at80m:  number[];
-  at120m: number[];
-  at180m: number[];
+  at10m:       number[];
+  at80m:       number[];
+  at120m:      number[];
+  at180m:      number[];
+  temperature: number[];
+  weatherCode: number[];
 }
 
 export function removeOutliers(values: number[]): number[] {
@@ -29,12 +31,25 @@ export function interpolate(lower: number, upper: number, fraction: number): num
   return lower + fraction * (upper - lower);
 }
 
+export function mode(values: number[]): number {
+  if (values.length === 0) return 0;
+  const counts = new Map<number, number>();
+  for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1);
+  let best = values[0];
+  let bestCount = 0;
+  for (const [v, c] of counts) {
+    if (c > bestCount) { best = v; bestCount = c; }
+  }
+  return best;
+}
+
 export function buildGrid(models: ModelData[], times: Date[]): WindGrid {
   const hourCount = times.length;
   const data: number[][] = [];
+  const temperature: number[] = [];
+  const weatherCode: number[] = [];
 
   for (let t = 0; t < hourCount; t++) {
-    // Do NOT filter out zeros — 0 km/h is valid calm wind
     const avg10  = mean(removeOutliers(models.map(m => m.at10m[t]  ?? 0)));
     const avg80  = mean(removeOutliers(models.map(m => m.at80m[t]  ?? 0)));
     const avg120 = mean(removeOutliers(models.map(m => m.at120m[t] ?? 0)));
@@ -46,9 +61,12 @@ export function buildGrid(models: ModelData[], times: Date[]): WindGrid {
       row.push(interpolateWind(heightM, avg10, avg80, avg120, avg180));
     }
     data.push(row);
+
+    temperature.push(mean(removeOutliers(models.map(m => m.temperature[t] ?? 0))));
+    weatherCode.push(mode(models.map(m => m.weatherCode[t] ?? 0)));
   }
 
-  return { data, times, modelCount: models.length };
+  return { data, times, modelCount: models.length, temperature, weatherCode };
 }
 
 function interpolateWind(h: number, v10: number, v80: number, v120: number, v180: number): number {
