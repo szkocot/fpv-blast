@@ -1,5 +1,5 @@
 // src/lib/i18n/en.ts
-import type { WindUnit, AppAppearance, AppLanguage, TempUnit } from '../types';
+import type { WindUnit, AppAppearance, AppLanguage, TempUnit, LocationMode } from '../types';
 
 export const en = {
   appName: 'FPV BLAST',
@@ -35,5 +35,11 @@ export const en = {
   temperature: 'Temperature',
   tempUnits: { celsius: '°C', fahrenheit: '°F' } as Record<TempUnit, string>,
   now: 'NOW',
+  location: 'Location',
+  locationModes: { auto: 'Auto (GPS)', custom: 'Custom' } as Record<LocationMode, string>,
+  notSet: 'Not set',
+  change: 'Change',
+  chooseLocation: 'Choose Location',
+  back: 'Back',
 };
 

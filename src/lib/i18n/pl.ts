@@ -1,5 +1,5 @@
 // src/lib/i18n/pl.ts
-import type { WindUnit, AppAppearance, AppLanguage, TempUnit } from '../types';
+import type { WindUnit, AppAppearance, AppLanguage, TempUnit, LocationMode } from '../types';
 import type { Translations } from './types';
 
 export const pl: Translations = {
@@ -36,4 +36,10 @@ export const pl: Translations = {
   temperature: 'Temperatura',
   tempUnits: { celsius: '°C', fahrenheit: '°F' } as Record<TempUnit, string>,
   now: 'TERAZ',
+  location: 'Lokalizacja',
+  locationModes: { auto: 'Auto (GPS)', custom: 'Własna' } as Record<LocationMode, string>,
+  notSet: 'Nie ustawiono',
+  change: 'Zmień',
+  chooseLocation: 'Wybierz lokalizację',
+  back: 'Wstecz',
 };
