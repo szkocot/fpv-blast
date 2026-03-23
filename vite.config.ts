@@ -2,12 +2,9 @@
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { VitePWA } from 'vite-plugin-pwa';
-import basicSsl from '@vitejs/plugin-basic-ssl';
 
-export default defineConfig({
-  base: '/fpv-blast/',
-  plugins: [
-    basicSsl(),
+export default defineConfig(async ({ command }) => {
+  const plugins = [
     svelte(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -20,9 +17,20 @@ export default defineConfig({
         cleanupOutdatedCaches: true
       }
     })
-  ],
-  test: {
-    environment: 'jsdom',
-    globals: true
+  ];
+
+  // HTTPS only in dev — needed for Geolocation API on non-localhost mobile
+  if (command === 'serve') {
+    const { default: basicSsl } = await import('@vitejs/plugin-basic-ssl');
+    plugins.unshift(basicSsl());
   }
+
+  return {
+    base: '/fpv-blast/',
+    plugins,
+    test: {
+      environment: 'jsdom',
+      globals: true
+    }
+  };
 });
