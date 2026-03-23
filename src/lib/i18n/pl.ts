@@ -42,4 +42,6 @@ export const pl: Translations = {
   change: 'Zmień',
   chooseLocation: 'Wybierz lokalizację',
   back: 'Wstecz',
+  sliderHint: '7-dniowe okno · przeciągnij, aby nawigować',
+  dateLocale: 'pl-PL',
 };

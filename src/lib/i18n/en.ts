@@ -41,5 +41,7 @@ export const en = {
   change: 'Change',
   chooseLocation: 'Choose Location',
   back: 'Back',
+  sliderHint: '7-day window · drag to navigate',
+  dateLocale: 'en-GB',
 };
 

@@ -5,6 +5,7 @@
   import { windColor } from '../stores/settingsStore';
   import { sliceGrid } from '../windGrid';
   import type { WindGrid } from '../types';
+  import { t } from '../i18n';
 
   export let grid: WindGrid;
   export let hourOffset: number;
@@ -129,7 +130,7 @@
       if (t % 3 === 0 && t < grid.times.length) {
         const date = grid.times[hourOffset + t];
         if (!date) continue;
-        const label = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        const label = date.toLocaleTimeString($t.dateLocale, { hour: '2-digit', minute: '2-digit' });
         const cx = LABEL_W + (t + 0.5) * strideX;
         ctx.fillText(label, cx, H - 4);
       }

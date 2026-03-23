@@ -4,6 +4,7 @@
   import type { WindGrid } from '../types';
   import { nextOffsetFromKey } from '../sliderNavigation';
   import { windColor } from '../stores/settingsStore';
+  import { t } from '../i18n';
 
   export let grid: WindGrid;
   export let hourOffset: number;
@@ -15,23 +16,23 @@
   let trackEl: HTMLDivElement;
   let trackCanvas: HTMLCanvasElement;
 
-  function dayLabel(idx: number): string {
+  function dayLabel(idx: number, dateLocale: string): string {
     if (idx >= grid.times.length) return '';
-    return grid.times[idx].toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' });
+    return grid.times[idx].toLocaleDateString(dateLocale, { weekday: 'short', day: 'numeric' });
   }
 
-  $: currentLabel = dayLabel(hourOffset);
+  $: currentLabel = dayLabel(hourOffset, $t.dateLocale);
   $: fillPct = (hourOffset / MAX_OFFSET) * 100;
   $: currentValueText = (() => {
     const currentTime = grid.times[hourOffset];
-    if (!currentTime) return 'Forecast timeline';
-    const dateLabel = currentTime.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' });
-    const timeLabel = currentTime.toLocaleTimeString('en-GB', {
+    if (!currentTime) return $t.sliderHint;
+    const dateLabel = currentTime.toLocaleDateString($t.dateLocale, { weekday: 'short', day: 'numeric' });
+    const timeLabel = currentTime.toLocaleTimeString($t.dateLocale, {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
     });
-    return `Forecast timeline at ${dateLabel} ${timeLabel}`;
+    return `${$t.sliderHint} — ${dateLabel} ${timeLabel}`;
   })();
 
   function parseRGBA(css: string): [number, number, number, number] {
@@ -99,7 +100,7 @@
 
 <div class="slider-area">
   <div class="top-row">
-    <span class="hint">7-day window · drag to navigate</span>
+    <span class="hint">{$t.sliderHint}</span>
     <span class="current">{currentLabel}</span>
   </div>
 
@@ -110,7 +111,7 @@
     on:pointermove={e => e.buttons && handlePointer(e)}
     on:keydown={onTrackKeydown}
     role="slider"
-    aria-label="Forecast timeline"
+    aria-label={$t.sliderHint}
     aria-valuetext={currentValueText}
     aria-valuenow={hourOffset}
     aria-valuemin={0}
@@ -127,7 +128,7 @@
 
   <div class="day-ticks">
     {#each Array(7) as _, i}
-      <span class="tick">{dayLabel(i * 24).split(' ')[0]}<br>{dayLabel(i * 24).split(' ')[1]}</span>
+      <span class="tick">{dayLabel(i * 24, $t.dateLocale).split(' ')[0]}<br>{dayLabel(i * 24, $t.dateLocale).split(' ')[1]}</span>
     {/each}
   </div>
 </div>

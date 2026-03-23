@@ -3,7 +3,7 @@
   import { t } from '../i18n';
   export let locationName: string;
 
-  const dateStr = new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  $: dateStr = new Date().toLocaleDateString($t.dateLocale, { weekday: 'short', day: 'numeric', month: 'short' });
 </script>
 
 <header>
