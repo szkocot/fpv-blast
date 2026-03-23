@@ -114,12 +114,9 @@ html, body {
   .desktop-rail {
     display: block;
     min-width: 0;
-  }
-
-  .desktop-rail .utility-rail {
-    display: flex;
     position: sticky;
     top: 16px;
+    align-self: start;
   }
 
   .mobile-footer {
