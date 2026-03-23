@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 // We test the pure conversion helpers, not the store itself (stores require DOM)
-import { convertFromKmh, convertToKmh, thresholdStep, windColor, haversineKm, convertTemp } from '../lib/stores/settingsStore';
+import { convertFromKmh, convertToKmh, thresholdStep, windColor, haversineKm, convertTemp, defaults } from '../lib/stores/settingsStore';
 
 describe('convertFromKmh', () => {
   it('kmh passthrough', () => expect(convertFromKmh(36, 'kmh')).toBeCloseTo(36));
@@ -67,5 +67,14 @@ describe('convertTemp', () => {
   });
   it('converts 100°C to 212°F', () => {
     expect(convertTemp(100, 'fahrenheit')).toBeCloseTo(212);
+  });
+});
+
+describe('defaults', () => {
+  it('locationMode defaults to auto', () => {
+    expect(defaults().locationMode).toBe('auto');
+  });
+  it('customLocation defaults to null', () => {
+    expect(defaults().customLocation).toBeNull();
   });
 });

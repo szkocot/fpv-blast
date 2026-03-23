@@ -1,6 +1,6 @@
 // src/lib/stores/settingsStore.ts
 import { writable } from 'svelte/store';
-import type { Settings, WindUnit, TempUnit } from '../types';
+import type { Settings, WindUnit, TempUnit, LocationMode, CustomLocation } from '../types';
 
 const STORAGE_KEY = 'fpvblast-settings';
 
@@ -12,8 +12,17 @@ function load(): Settings {
   return defaults();
 }
 
-function defaults(): Settings {
-  return { thresholdKmh: 25, unit: 'kmh', appearance: 'auto', refetchRadiusKm: 5, language: 'auto', tempUnit: 'celsius' };
+export function defaults(): Settings {
+  return {
+    thresholdKmh: 25,
+    unit: 'kmh',
+    appearance: 'auto',
+    refetchRadiusKm: 5,
+    language: 'auto',
+    tempUnit: 'celsius',
+    locationMode: 'auto',
+    customLocation: null,
+  };
 }
 
 const _store = writable<Settings>(load());

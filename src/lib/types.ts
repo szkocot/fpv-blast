@@ -5,6 +5,14 @@ export type AppAppearance = 'auto' | 'light' | 'dark';
 export type AppLanguage = 'auto' | 'en' | 'pl';
 export type TempUnit = 'celsius' | 'fahrenheit';
 
+export type LocationMode = 'auto' | 'custom';
+
+export interface CustomLocation {
+  lat: number;
+  lon: number;
+  name: string;
+}
+
 export interface WindGrid {
   data: number[][];   // [timeIndex 0..167][heightIndex 0..17] = km/h
   times: Date[];      // 168 entries
@@ -26,6 +34,8 @@ export interface Settings {
   refetchRadiusKm: number;
   language: AppLanguage;
   tempUnit: TempUnit;
+  locationMode: LocationMode;
+  customLocation: CustomLocation | null;
 }
 
 export type FetchState =
