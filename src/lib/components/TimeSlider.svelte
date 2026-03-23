@@ -22,7 +22,17 @@
 
   $: currentLabel = dayLabel(hourOffset);
   $: fillPct = (hourOffset / MAX_OFFSET) * 100;
-  $: currentValueText = currentLabel ? `Forecast timeline starting ${currentLabel}` : 'Forecast timeline';
+  $: currentValueText = (() => {
+    const currentTime = grid.times[hourOffset];
+    if (!currentTime) return 'Forecast timeline';
+    const dateLabel = currentTime.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' });
+    const timeLabel = currentTime.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+    return `Forecast timeline at ${dateLabel} ${timeLabel}`;
+  })();
 
   function parseRGBA(css: string): [number, number, number, number] {
     const m = css.match(/rgba?\((\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)(?:,\s*([\d.]+))?\)/);
@@ -74,8 +84,8 @@
     onChange(Math.round(fraction * MAX_OFFSET));
   }
 
-  function onTrackDown(e: PointerEvent) {
-    e.currentTarget.setPointerCapture(e.pointerId);
+  function onTrackDown(e: PointerEvent & { currentTarget: HTMLDivElement | null }) {
+    e.currentTarget?.setPointerCapture(e.pointerId);
     handlePointer(e);
   }
 

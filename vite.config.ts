@@ -1,10 +1,10 @@
 // vite.config.ts
-import { defineConfig } from 'vite';
+import { defineConfig, type PluginOption } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(async ({ command }) => {
-  const plugins = [
+  const plugins: PluginOption[] = [
     svelte(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -22,7 +22,7 @@ export default defineConfig(async ({ command }) => {
   // HTTPS only in dev — needed for Geolocation API on non-localhost mobile
   if (command === 'serve') {
     const { default: basicSsl } = await import('@vitejs/plugin-basic-ssl');
-    plugins.unshift(basicSsl());
+    plugins.unshift(basicSsl() as PluginOption);
   }
 
   return {
