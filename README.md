@@ -1,47 +1,88 @@
-# Svelte + TS + Vite
+# FPV Blast
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+A wind forecast PWA for FPV drone pilots. Shows a 7-day wind speed heatmap across 18 altitude layers (10–180 m) so you can instantly see when and where it's safe to fly.
 
-## Recommended IDE Setup
+## Features
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+- **Wind heatmap** — colour-coded grid of wind speed vs. altitude vs. time, with smooth bilinear gradients
+- **7-day slider** — drag to navigate the forecast; the track itself is coloured by wind speed
+- **Configurable threshold** — set your personal fly/no-fly speed limit; all colours update in real time
+- **Best window** — automatically finds the calmest upcoming 4-hour window
+- **Multi-model averaging** — blends 6 open-meteo forecast models and filters outliers
+- **Re-fetch radius** — don't waste API calls when you haven't moved (configurable, default 5 km)
+- **Full-width desktop layout** — works great on laptop/desktop browsers, not just mobile
+- **PWA** — installable on iOS, Android, and desktop; works offline after first load
+- **Dark / light / auto theme**
 
-## Need an official Svelte framework?
+## Live App
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+👉 **https://szymonkocot.github.io/fpv-blast/**
 
-## Technical considerations
+## Tech Stack
 
-**Why use this over SvelteKit?**
+| Layer | Technology |
+|-------|-----------|
+| Framework | [Svelte 5](https://svelte.dev/) + TypeScript |
+| Build | [Vite](https://vitejs.dev/) + [vite-plugin-pwa](https://vite-pwa-org.netlify.app/) |
+| Wind data | [Open-Meteo](https://open-meteo.com/) free API (no key required) |
+| Geocoding | [Nominatim](https://nominatim.openstreetmap.org/) (OpenStreetMap) |
+| Rendering | Canvas 2D (heatmap + slider gradient) |
+| Tests | [Vitest](https://vitest.dev/) — 42 unit tests |
+| Deploy | GitHub Actions → GitHub Pages |
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+## Getting Started
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
-
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
-
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
-
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
-
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `allowJs` in the TS template?**
-
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+```bash
+git clone https://github.com/szymonkocot/fpv-blast.git
+cd fpv-blast
+npm install
+npm run dev
 ```
+
+The dev server starts at `https://localhost:5173` (HTTPS for geolocation, provided by `@vitejs/plugin-basic-ssl`).
+
+## Running Tests
+
+```bash
+npm test          # watch mode
+npm test -- --run # single run
+```
+
+## Building
+
+```bash
+npm run build   # outputs to dist/
+npm run preview # preview the production build
+```
+
+## How It Works
+
+1. **Location** — browser Geolocation API; re-fetches only when you move more than the configured radius
+2. **Forecast** — queries Open-Meteo for 6 ensemble models at 4 altitude levels; interpolates linearly to 18 display heights (10–180 m in 10 m steps)
+3. **Outlier filtering** — removes any model whose mean speed is > 2× the median before averaging
+4. **Colour scale** — green (< 80% of threshold) → yellow (80–100%) → red (> threshold); opacity scales with speed
+5. **Best window** — slides a 4-hour window across today, picks the one with lowest max speed at any height
+
+## Project Structure
+
+```
+src/
+  lib/
+    components/      # Svelte UI components
+    services/        # openMeteo API + geocoder
+    stores/          # settingsStore, windStore
+    i18n/            # English strings
+    types.ts         # shared TypeScript types
+    windGrid.ts      # grid slicing helpers
+    windProcessor.ts # model merging + outlier filter
+  App.svelte
+  main.ts
+public/
+  icons/             # PWA icons
+  manifest.json
+.github/workflows/deploy.yml
+```
+
+## License
+
+MIT
