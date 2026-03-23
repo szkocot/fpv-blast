@@ -1,0 +1,36 @@
+// src/lib/i18n/pl.ts
+import type { WindUnit, AppAppearance, AppLanguage } from '../types';
+import type { Translations } from './types';
+
+export const pl: Translations = {
+  appName: 'FPV BLAST',
+  fetchingForecast: 'Pobieranie prognozy…',
+  couldNotLoad: 'Nie udało się załadować prognozy — sprawdź połączenie.',
+  limitedData: (n: number) => `Ograniczone dane — ${n} z 6 źródeł dostępnych`,
+  locationRequired: 'Dostęp do lokalizacji jest wymagany do pobrania lokalnych prognoz wiatru.',
+  locationHelp: 'Włącz lokalizację w ustawieniach przeglądarki i odśwież stronę.',
+  retry: 'Spróbuj ponownie',
+  settings: 'Ustawienia',
+  done: 'Gotowe',
+  windThreshold: 'Próg wiatru',
+  thresholdHint: 'Żółta strefa zaczyna się przy 80% tej wartości',
+  windSpeedUnit: 'Jednostka prędkości wiatru',
+  appearance: 'Wygląd',
+  dataSources: 'Źródła danych',
+  dataSourcesHint: 'Open-Meteo bezpłatny plan · średnia bez wartości odstających',
+  ok: '✓ OK',
+  caution: '⚠ Uwaga',
+  noflyzone: '✗ Zakaz lotu',
+  nowAt10m: 'TERAZ · 10m',
+  peak: 'SZCZYT',
+  bestToday: 'NAJLEPSZY DZIŚ',
+  bestLow: 'NAJLEPSZY · NISKO',
+  noWindow: 'Brak okna',
+  hWindow: (n: number) => `${n}h okno`,
+  units: { kmh: 'km/h', ms: 'm/s', knots: 'kn' } as Record<WindUnit, string>,
+  appearances: { auto: 'Auto', light: 'Jasny', dark: 'Ciemny' } as Record<AppAppearance, string>,
+  refetchRadius: 'Promień ponownego pobierania',
+  refetchRadiusHint: 'Przesuń się o tyle przed odświeżeniem pogody',
+  language: 'Język',
+  languageNames: { auto: 'Auto', en: 'Angielski', pl: 'Polski' } as Record<AppLanguage, string>,
+};

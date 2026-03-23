@@ -1,7 +1,7 @@
 // src/lib/i18n/en.ts
-import type { WindUnit, AppAppearance } from '../types';
+import type { WindUnit, AppAppearance, AppLanguage } from '../types';
 
-export const t = {
+export const en = {
   appName: 'FPV BLAST',
   fetchingForecast: 'Fetching forecast…',
   couldNotLoad: 'Could not load forecast — check your connection.',
@@ -30,4 +30,9 @@ export const t = {
   appearances: { auto: 'Auto', light: 'Light', dark: 'Dark' } as Record<AppAppearance, string>,
   refetchRadius: 'Re-fetch Radius',
   refetchRadiusHint: 'Move this far before refreshing weather',
+  language: 'Language',
+  languageNames: { auto: 'Auto', en: 'English', pl: 'Polish' } as Record<AppLanguage, string>,
 };
+
+// Temporary backward-compat shim — removed in Task 3
+export const t = en;
