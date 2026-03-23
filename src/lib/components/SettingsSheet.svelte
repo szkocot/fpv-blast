@@ -2,7 +2,7 @@
 <script lang="ts">
   import { t } from '../i18n';
   import { convertFromKmh, convertToKmh, thresholdStep } from '../stores/settingsStore';
-  import type { Settings, WindUnit, AppAppearance } from '../types';
+  import type { Settings, WindUnit, AppAppearance, AppLanguage } from '../types';
 
   export let settings: Settings;
   export let modelCount: number;
@@ -23,6 +23,7 @@
 
   const units: WindUnit[]       = ['kmh', 'ms', 'knots'];
   const appearances: AppAppearance[] = ['auto', 'light', 'dark'];
+  const languages: AppLanguage[] = ['auto', 'en', 'pl'];
 </script>
 
 <!-- Backdrop -->
@@ -52,6 +53,18 @@
       {#each units as u}
         <button class:active={settings.unit === u} on:click={() => onChange({ unit: u })}>
           {$t.units[u]}
+        </button>
+      {/each}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">{$t.language}</div>
+    <div class="seg-group">
+      {#each languages as lang}
+        <button class:active={settings.language === lang}
+                on:click={() => onChange({ language: lang })}>
+          {$t.languageNames[lang]}
         </button>
       {/each}
     </div>
