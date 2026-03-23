@@ -28,4 +28,6 @@ export const t = {
   hWindow: (n: number) => `${n}h window`,
   units: { kmh: 'km/h', ms: 'm/s', knots: 'kn' } as Record<WindUnit, string>,
   appearances: { auto: 'Auto', light: 'Light', dark: 'Dark' } as Record<AppAppearance, string>,
+  refetchRadius: 'Re-fetch Radius',
+  refetchRadiusHint: 'Move this far before refreshing weather',
 };

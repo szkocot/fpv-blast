@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 // We test the pure conversion helpers, not the store itself (stores require DOM)
-import { convertFromKmh, convertToKmh, thresholdStep, windColor } from '../lib/stores/settingsStore';
+import { convertFromKmh, convertToKmh, thresholdStep, windColor, haversineKm } from '../lib/stores/settingsStore';
 
 describe('convertFromKmh', () => {
   it('kmh passthrough', () => expect(convertFromKmh(36, 'kmh')).toBeCloseTo(36));
@@ -41,5 +41,19 @@ describe('windColor', () => {
     const high = windColor(24, 25);
     const opacityFrom = (s: string) => parseFloat(s.replace(/.*,/, '').replace(')', ''));
     expect(opacityFrom(low)).toBeLessThan(opacityFrom(high));
+  });
+});
+
+describe('haversineKm', () => {
+  it('returns ~0 for same point', () => {
+    expect(haversineKm(50, 20, 50, 20)).toBeCloseTo(0, 5);
+  });
+
+  it('returns ~111 km for 1 degree latitude difference', () => {
+    expect(haversineKm(0, 0, 1, 0)).toBeCloseTo(111.19, 0);
+  });
+
+  it('returns ~252 km between Kraków and Warsaw', () => {
+    expect(haversineKm(50.06, 19.94, 52.23, 21.01)).toBeCloseTo(252, -1);
   });
 });

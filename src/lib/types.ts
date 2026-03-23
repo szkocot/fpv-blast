@@ -19,6 +19,7 @@ export interface Settings {
   thresholdKmh: number;
   unit: WindUnit;
   appearance: AppAppearance;
+  refetchRadiusKm: number;
 }
 
 export type FetchState =

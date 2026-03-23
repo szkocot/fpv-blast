@@ -78,6 +78,20 @@
     </div>
   </div>
 
+  <div class="section">
+    <div class="row">
+      <div>
+        <div class="row-title">{t.refetchRadius}</div>
+        <div class="row-hint">{t.refetchRadiusHint}</div>
+      </div>
+      <div class="stepper">
+        <button on:click={() => onChange({ refetchRadiusKm: Math.max(1, settings.refetchRadiusKm - 1) })}>−</button>
+        <span>{settings.refetchRadiusKm} km</span>
+        <button on:click={() => onChange({ refetchRadiusKm: Math.min(50, settings.refetchRadiusKm + 1) })}>+</button>
+      </div>
+    </div>
+  </div>
+
   <button class="done-btn" on:click={onClose}>{t.done}</button>
 </div>
 

@@ -3,7 +3,7 @@
   import { onMount } from 'svelte';
   import { t } from './lib/i18n/en';
   import { windGrid, fetchState, hourOffset, fetchWind, locationName } from './lib/stores/windStore';
-  import { settingsStore } from './lib/stores/settingsStore';
+  import { settingsStore, haversineKm } from './lib/stores/settingsStore';
   import { reverseGeocode } from './lib/services/geocoder';
 
   import AppHeader       from './lib/components/AppHeader.svelte';
@@ -16,6 +16,8 @@
 
   let showSettings = false;
   let gpsError = false;
+  let lastFetchLat: number | null = null;
+  let lastFetchLon: number | null = null;
 
   // Apply theme
   $: {
@@ -26,6 +28,16 @@
 
   function onLocation(pos: GeolocationPosition) {
     const { latitude: lat, longitude: lon } = pos.coords;
+    const radius = $settingsStore.refetchRadiusKm;
+    if (
+      lastFetchLat !== null &&
+      lastFetchLon !== null &&
+      haversineKm(lastFetchLat, lastFetchLon, lat, lon) < radius
+    ) {
+      return; // within radius — skip re-fetch
+    }
+    lastFetchLat = lat;
+    lastFetchLon = lon;
     fetchWind(lat, lon);
     reverseGeocode(lat, lon).then(name => locationName.set(name));
   }
