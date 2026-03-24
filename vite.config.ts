@@ -26,7 +26,7 @@ export default defineConfig(async ({ command }) => {
   }
 
   return {
-    base: '/fpv-blast/',
+    base: '/',
     plugins,
     test: {
       exclude: ['.worktrees/**', 'node_modules/**', 'dist/**', 'e2e/**', 'test-results/**'],
