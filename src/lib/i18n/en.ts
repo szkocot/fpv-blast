@@ -2,7 +2,7 @@
 import type { WindUnit, AppAppearance, AppLanguage, TempUnit, LocationMode } from '../types';
 
 export const en = {
-  appName: 'FPV BLAST',
+  appName: 'DRONE BLAST',
   fetchingForecast: 'Fetching forecast…',
   couldNotLoad: 'Could not load forecast — check your connection.',
   limitedData: (n: number) => `Limited data — ${n} of 6 sources available`,

@@ -3,7 +3,7 @@ import type { WindUnit, AppAppearance, AppLanguage, TempUnit, LocationMode } fro
 import type { Translations } from './types';
 
 export const pl: Translations = {
-  appName: 'FPV BLAST',
+  appName: 'DRONE BLAST',
   fetchingForecast: 'Pobieranie prognozy…',
   couldNotLoad: 'Nie udało się załadować prognozy — sprawdź połączenie.',
   limitedData: (n: number) => `Ograniczone dane — ${n} z 6 źródeł dostępnych`,
