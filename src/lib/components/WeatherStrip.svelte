@@ -287,6 +287,7 @@
     color: var(--blue);
     letter-spacing: 0.5px;
     text-transform: uppercase;
+    align-self: center;
   }
 
   .icon { font-size: 14px; line-height: 1; }
