@@ -110,9 +110,9 @@
       <div class="col">
         <!-- Weather cell (top) -->
         <div class="cell" class:active={i === 0}>
-          {#if i === 0}<span class="now-label">{$t.now}</span>{/if}
           <span class="icon">{weatherIcon(grid.weatherCode[idx])}</span>
           <span class="temp">{displayTemp(grid.temperature[idx])}</span>
+          {#if i === 0}<span class="now-label">{$t.now}</span>{/if}
         </div>
         <!-- Gust cell (bottom) -->
         <div class="cell gust-cell" class:active={i === 0}
