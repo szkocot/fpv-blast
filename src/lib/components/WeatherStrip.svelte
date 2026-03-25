@@ -249,7 +249,7 @@
   /* Shared scroll container — single overflow-x:auto wraps both rows */
   .rows-scroll {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     padding: 3px 6px 4px;
