@@ -112,13 +112,14 @@
         <div class="cell" class:active={i === 0}>
           <span class="icon">{weatherIcon(grid.weatherCode[idx])}</span>
           <span class="temp">{displayTemp(grid.temperature[idx])}</span>
-          {#if i === 0}<span class="now-label">{$t.now}</span>{/if}
         </div>
-        <!-- Gust cell (bottom) -->
+        <!-- Gust cell (middle) -->
         <div class="cell gust-cell" class:active={i === 0}
              style="background: {windColor(grid.windGust[idx], thresholdKmh)}">
           <span class="gust-val">{displayGust(grid.windGust[idx])}</span>
         </div>
+        <!-- NOW label below both cells -->
+        {#if i === 0}<span class="now-label">{$t.now}</span>{/if}
       </div>
     {/each}
   </div>
