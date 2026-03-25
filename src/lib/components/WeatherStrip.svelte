@@ -141,7 +141,7 @@
   }
 
   .section-label {
-    font-size: 8px;
+    font-size: 11px;
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -149,12 +149,12 @@
   }
 
   .kp-badge {
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 700;
     background: transparent;
     border: 1px solid rgba(96, 165, 250, 0.3);
     color: var(--blue);
-    padding: 2px 6px;
+    padding: 3px 8px;
     border-radius: 4px;
     cursor: pointer;
     display: flex;
@@ -179,7 +179,7 @@
   }
 
   .kp-panel-title {
-    font-size: 8px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--blue);
     text-transform: uppercase;
@@ -221,8 +221,8 @@
     min-height: 4px;
   }
 
-  .kp-num { font-size: 9px; font-weight: 700; line-height: 1; }
-  .kp-time { font-size: 7px; color: var(--text-muted); line-height: 1; min-height: 9px; }
+  .kp-num { font-size: 11px; font-weight: 700; line-height: 1; }
+  .kp-time { font-size: 9px; color: var(--text-muted); line-height: 1; min-height: 11px; }
   .kp-now-label { color: var(--blue); font-weight: 700; }
 
   .day-sep {
@@ -315,5 +315,10 @@
       gap: 1px;
       padding: 2px 2px;
     }
+
+    .col-label { font-size: 11px; height: 14px; }
+    .icon      { font-size: 18px; }
+    .temp      { font-size: 12px; }
+    .gust-val  { font-size: 12px; }
   }
 </style>
