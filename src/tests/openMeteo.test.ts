@@ -25,6 +25,9 @@ describe('buildUrl', () => {
     expect(url).toContain('temperature_2m');
     expect(url).toContain('weather_code');
   });
+  it('includes wind_gusts_10m variable', () => {
+    expect(buildUrl(0, 0, 'best_match')).toContain('wind_gusts_10m');
+  });
 });
 
 describe('decodeResponse', () => {
@@ -37,6 +40,7 @@ describe('decodeResponse', () => {
       wind_speed_180m: [30.0, 31.0],
       temperature_2m:  [12.0, 13.0],
       weather_code:    [1, 2],
+      wind_gusts_10m:  [15.0, 16.0],
     }
   };
   it('parses wind speeds', () => {
@@ -53,5 +57,10 @@ describe('decodeResponse', () => {
     const r = decodeResponse(json);
     expect(r.temperature[0]).toBeCloseTo(12.0);
     expect(r.weatherCode[0]).toBe(1);
+  });
+  it('parses wind gusts', () => {
+    const r = decodeResponse(json);
+    expect(r.windGust[0]).toBeCloseTo(15.0);
+    expect(r.windGust[1]).toBeCloseTo(16.0);
   });
 });

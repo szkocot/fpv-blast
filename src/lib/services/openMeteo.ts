@@ -9,7 +9,7 @@ export function buildUrl(lat: number, lon: number, model: string): string {
   const params = new URLSearchParams({
     latitude:         lat.toFixed(6),
     longitude:        lon.toFixed(6),
-    hourly:           'wind_speed_10m,wind_speed_80m,wind_speed_120m,wind_speed_180m,temperature_2m,weather_code',
+    hourly:           'wind_speed_10m,wind_speed_80m,wind_speed_120m,wind_speed_180m,temperature_2m,weather_code,wind_gusts_10m',
     wind_speed_unit:  'kmh',
     forecast_days:    '7',
     models:           model,
@@ -30,6 +30,7 @@ export function decodeResponse(json: any): DecodedModel {
     at180m:      h.wind_speed_180m  as number[],
     temperature: h.temperature_2m   as number[],
     weatherCode: h.weather_code     as number[],
+    windGust:    h.wind_gusts_10m   as number[],
   };
 }
 
