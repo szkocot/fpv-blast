@@ -203,10 +203,10 @@ Layout (top to bottom inside `.strip`):
 1. **Header row** — "Weather" label + Kp badge
    - Badge text: `Kp {currentKp} — {kpLabel}` (or `Kp —` if `kpData` is null)
    - Chevron `▾` / `▴` on badge toggles `showKpPanel`
-2. **Kp panel** (`{#if showKpPanel && kpData}`) — bar chart of all entries, current slot highlighted, day separators between UTC midnight boundaries
+2. **Kp panel** (`{#if showKpPanel && kpData}`) — bar chart of all entries. The "current slot" is the `KpEntry` whose `time` is closest to `Date.now()` (i.e. `kpData.reduce` to find the minimum `|entry.time - now|`). Current slot highlighted in blue. Day separators between UTC midnight boundaries.
 3. **Temp + weather icon cells** — unchanged
 4. **Gusts label** — `$t.gustsAt10m`
-5. **Gusts cells** — same 24-cell scrollable row, value from `windGust[idx]`, background from `windColor(windGust[idx], thresholdKmh)`
+5. **Gusts cells** — same 24-cell scrollable row using the same `indices` array as the temp row (driven by `hourOffset`). Value from `windGust[idx]`, background from `windColor(windGust[idx], thresholdKmh)`.
 
 The two scrollable rows (`cells` and `gust-cells`) share scroll position — achieved by setting `overflow-x: auto` on the outer `.strip` container and making both rows children that share its scroll context (no nested scroll containers).
 
