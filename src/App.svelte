@@ -5,6 +5,7 @@
   import { windGrid, fetchState, hourOffset, fetchWind, locationName } from './lib/stores/windStore';
   import { settingsStore, haversineKm } from './lib/stores/settingsStore';
   import { reverseGeocode } from './lib/services/geocoder';
+  import { kpStore, fetchKp } from './lib/stores/kpStore';
 
   import AppHeader       from './lib/components/AppHeader.svelte';
   import SummaryStrip    from './lib/components/SummaryStrip.svelte';
@@ -99,6 +100,7 @@
 
   onMount(() => {
     requestLocation();
+    fetchKp();
     _lastFetchedKey = $settingsStore.locationMode + '|' + JSON.stringify($settingsStore.customLocation);
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') requestLocation();
@@ -159,7 +161,10 @@
         <WeatherStrip
           grid={$windGrid}
           hourOffset={$hourOffset}
-          unit={$settingsStore.tempUnit}
+          tempUnit={$settingsStore.tempUnit}
+          windUnit={$settingsStore.unit}
+          thresholdKmh={$settingsStore.thresholdKmh}
+          kpData={$kpStore}
         />
 
         <TimeSlider
