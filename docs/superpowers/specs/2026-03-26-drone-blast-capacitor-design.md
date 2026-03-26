@@ -22,7 +22,7 @@ The app is already named "Drone Blast" in `index.html`, `public/manifest.json`, 
 | `package-lock.json` | same |
 | `src/lib/stores/settingsStore.ts` | `STORAGE_KEY = 'fpvblast-settings'` → `'droneblast-settings'` |
 | `playwright.config.ts` | `baseURL` path segment `/fpv-blast/` → `/` (also aligns with Capacitor) |
-| `e2e/location-mode-refetch.spec.ts` | `BASE` constant same path fix |
+| `e2e/location-mode-refetch.spec.ts` | `BASE` constant path fix + hardcoded `'fpvblast-settings'` localStorage key → `'droneblast-settings'` |
 | `README.md` | git clone URL and `cd` command |
 
 **Storage key note:** Changing `STORAGE_KEY` means existing installs lose saved settings (thresholds, units, appearance). Acceptable for this rename; no migration needed.
