@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE = 'https://localhost:5175/fpv-blast/';
+const BASE = 'https://localhost:5175/';
 
 test('switching location mode triggers a re-fetch', async ({ page, context }) => {
   // --- grant geolocation and mock GPS position ---
@@ -15,7 +15,7 @@ test('switching location mode triggers a re-fetch', async ({ page, context }) =>
   });
 
   await page.addInitScript(() => {
-    localStorage.setItem('fpvblast-settings', JSON.stringify({
+    localStorage.setItem('droneblast-settings', JSON.stringify({
       thresholdKmh: 25,
       unit: 'kmh',
       appearance: 'auto',

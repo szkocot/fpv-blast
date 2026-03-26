@@ -2,7 +2,7 @@
 import { writable } from 'svelte/store';
 import type { Settings, WindUnit, TempUnit, LocationMode, CustomLocation } from '../types';
 
-const STORAGE_KEY = 'fpvblast-settings';
+const STORAGE_KEY = 'droneblast-settings';
 
 function load(): Settings {
   try {

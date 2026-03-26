@@ -33,8 +33,8 @@ A wind forecast PWA for FPV drone pilots. Shows a 7-day wind speed heatmap acros
 ## Getting Started
 
 ```bash
-git clone https://github.com/szymonkocot/fpv-blast.git
-cd fpv-blast
+git clone https://github.com/szymonkocot/drone-blast.git
+cd drone-blast
 npm install
 npm run dev
 ```
