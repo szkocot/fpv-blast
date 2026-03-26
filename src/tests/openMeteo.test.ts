@@ -77,7 +77,7 @@ describe('fetchModel timeout', () => {
     // Capture the AbortSignal so we can assert it fired after advancing time.
     // The fetch mock never resolves so fetchModel stays pending — we suppress
     // that pending rejection and instead assert the abort mechanism fired.
-    let capturedSignal: AbortSignal | undefined;
+    let capturedSignal: AbortSignal | null | undefined;
     vi.stubGlobal('fetch', vi.fn().mockImplementation((_url: string, opts?: RequestInit) => {
       capturedSignal = opts?.signal;
       return new Promise(() => {}); // never resolves
