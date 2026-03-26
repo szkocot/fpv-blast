@@ -31,7 +31,13 @@ export default defineConfig(async ({ command }) => {
     test: {
       exclude: ['.worktrees/**', 'node_modules/**', 'dist/**', 'e2e/**', 'test-results/**'],
       environment: 'jsdom',
-      globals: true
+      environmentOptions: {
+        jsdom: {
+          url: 'http://localhost'
+        }
+      },
+      globals: true,
+      restoreMocks: true
     }
   };
 });
