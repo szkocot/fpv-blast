@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { buildUrl, decodeResponse } from '../lib/services/openMeteo';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { buildUrl, decodeResponse, fetchModel } from '../lib/services/openMeteo';
 
 describe('buildUrl', () => {
   it('includes lat/lon', () => {
@@ -62,5 +62,33 @@ describe('decodeResponse', () => {
     const r = decodeResponse(json);
     expect(r.windGust[0]).toBeCloseTo(15.0);
     expect(r.windGust[1]).toBeCloseTo(16.0);
+  });
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
+
+describe('fetchModel timeout', () => {
+  it('rejects after 8 seconds when fetch does not respond', async () => {
+    vi.useFakeTimers();
+
+    // Capture the AbortSignal so we can assert it fired after advancing time.
+    // The fetch mock never resolves so fetchModel stays pending — we suppress
+    // that pending rejection and instead assert the abort mechanism fired.
+    let capturedSignal: AbortSignal | undefined;
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((_url: string, opts?: RequestInit) => {
+      capturedSignal = opts?.signal;
+      return new Promise(() => {}); // never resolves
+    }));
+
+    const promise = fetchModel(0, 0, 'best_match');
+    promise.catch(() => {}); // prevent unhandled-rejection after test ends
+
+    await vi.advanceTimersByTimeAsync(8001);
+
+    // The AbortController timeout should have fired within 8 seconds.
+    expect(capturedSignal?.aborted).toBe(true);
   });
 });

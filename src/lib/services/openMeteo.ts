@@ -35,7 +35,13 @@ export function decodeResponse(json: any): DecodedModel {
 }
 
 export async function fetchModel(lat: number, lon: number, model: string): Promise<DecodedModel> {
-  const res = await fetch(buildUrl(lat, lon, model));
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return decodeResponse(await res.json());
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(buildUrl(lat, lon, model), { signal: controller.signal });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return decodeResponse(await res.json());
+  } finally {
+    clearTimeout(timer);
+  }
 }
