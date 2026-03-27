@@ -14,9 +14,15 @@
   $: dateLocale = $t.dateLocale;
 
   let canvas: HTMLCanvasElement;
+  let viewport: HTMLDivElement;
+  let contentWidth = 0;
 
   const GAP    = 2;   // px between cells
   const RADIUS = 4;   // px corner radius
+  const MOBILE_CELL_W = 34;
+  const DESKTOP_CELL_W = 48;
+  const MOBILE_LABEL_W = 38;
+  const DESKTOP_LABEL_W = 50;
 
   function parseRGBA(css: string): [number, number, number, number] {
     const m = css.match(/rgba?\((\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)(?:,\s*([\d.]+))?\)/);
@@ -50,7 +56,7 @@
     // Responsive label sizes based on CSS layout width (avoids DPR issues)
     const isDesktop = canvas.offsetWidth > 600;
     const fontSize  = isDesktop ? 13 : 12;
-    const LABEL_W   = isDesktop ? 50 : 38;
+    const LABEL_W   = isDesktop ? DESKTOP_LABEL_W : MOBILE_LABEL_W;
     const LABEL_H   = isDesktop ? 28 : 24;
 
     const chartW = W - LABEL_W;
@@ -140,10 +146,19 @@
   }
 
   function resize() {
-    if (!canvas) return;
-    const parent = canvas.parentElement!;
-    canvas.width  = parent.clientWidth;
-    canvas.height = parent.clientHeight - 8;  // 8px = top padding of .canvas-wrap
+    if (!canvas || !viewport) return;
+    const viewportWidth = viewport.clientWidth;
+    const isDesktop = viewportWidth > 600;
+    const targetCellWidth = isDesktop ? DESKTOP_CELL_W : MOBILE_CELL_W;
+    const labelWidth = isDesktop ? DESKTOP_LABEL_W : MOBILE_LABEL_W;
+    const cols = Math.min(24, Math.max(0, grid.times.length - hourOffset));
+    const naturalWidth = cols > 0
+      ? labelWidth + cols * targetCellWidth + Math.max(0, cols - 1) * GAP
+      : viewportWidth;
+
+    contentWidth = Math.max(viewportWidth, naturalWidth);
+    canvas.width = contentWidth;
+    canvas.height = viewport.clientHeight - 8;  // 8px = top padding of .canvas-wrap
     draw();
   }
 
@@ -156,18 +171,33 @@
   afterUpdate(draw);
 </script>
 
-<div class="canvas-wrap">
-  <canvas bind:this={canvas}></canvas>
+<div class="heatmap-scroll" bind:this={viewport}>
+  <div class="canvas-wrap" style:width={`${contentWidth}px`}>
+    <canvas bind:this={canvas}></canvas>
+  </div>
 </div>
 
 <style>
-  .canvas-wrap {
+  .heatmap-scroll {
     width: 100%;
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .heatmap-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .canvas-wrap {
+    min-width: 100%;
     height: 100%;
     padding: 8px 0 0;
   }
+
   canvas {
     display: block;
-    width: 100%;
   }
 </style>
