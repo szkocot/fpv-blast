@@ -6,6 +6,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const BACKGROUND_COLOR = '#2b2a29';
 export const WEB_ICON_BASENAME = 'v073';
+export const ANDROID_LAUNCHER_INSET = 0.18;
+export const ANDROID_SPLASH_INSET = 0.24;
 
 const FAVICON_SOURCE_PATH = resolve(__dirname, 'icon-sources/favicon-source.svg');
 const MAIN_ICON_SOURCE_PATH = resolve(__dirname, 'icon-sources/main-icon-source.svg');

@@ -6,7 +6,14 @@ import sharp from 'sharp';
 import { mkdirSync, writeFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
-import { BACKGROUND_COLOR, getFaviconSvg, getMainIconSvg, WEB_ICON_BASENAME } from './icon-artwork.mjs';
+import {
+  ANDROID_LAUNCHER_INSET,
+  ANDROID_SPLASH_INSET,
+  BACKGROUND_COLOR,
+  getFaviconSvg,
+  getMainIconSvg,
+  WEB_ICON_BASENAME,
+} from './icon-artwork.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
@@ -21,6 +28,35 @@ async function writePng(svg, outputPath, width, height = width) {
     })
     .png()
     .toFile(outputPath);
+  console.log(`Generated ${outputPath.replace(`${root}/`, '')}`);
+}
+
+async function writeInsetPng(svg, outputPath, width, height = width, inset = 0) {
+  const innerWidth = Math.max(1, Math.round(width * (1 - inset * 2)));
+  const innerHeight = Math.max(1, Math.round(height * (1 - inset * 2)));
+  const left = Math.max(0, Math.round((width - innerWidth) / 2));
+  const top = Math.max(0, Math.round((height - innerHeight) / 2));
+
+  const renderedInner = await sharp(Buffer.from(svg))
+    .resize(innerWidth, innerHeight, {
+      fit: 'contain',
+      background: BACKGROUND_COLOR,
+    })
+    .png()
+    .toBuffer();
+
+  await sharp({
+    create: {
+      width,
+      height,
+      channels: 4,
+      background: BACKGROUND_COLOR,
+    },
+  })
+    .composite([{ input: renderedInner, left, top }])
+    .png()
+    .toFile(outputPath);
+
   console.log(`Generated ${outputPath.replace(`${root}/`, '')}`);
 }
 
@@ -50,9 +86,9 @@ const launcherSizes = [
 
 for (const size of launcherSizes) {
   const base = `${root}/android/app/src/main/res/${size.dir}`;
-  await writePng(mainIconSvg, `${base}/ic_launcher.png`, size.launcher);
-  await writePng(mainIconSvg, `${base}/ic_launcher_round.png`, size.launcher);
-  await writePng(mainIconSvg, `${base}/ic_launcher_foreground.png`, size.foreground);
+  await writeInsetPng(mainIconSvg, `${base}/ic_launcher.png`, size.launcher, size.launcher, ANDROID_LAUNCHER_INSET);
+  await writeInsetPng(mainIconSvg, `${base}/ic_launcher_round.png`, size.launcher, size.launcher, ANDROID_LAUNCHER_INSET);
+  await writeInsetPng(mainIconSvg, `${base}/ic_launcher_foreground.png`, size.foreground, size.foreground, ANDROID_LAUNCHER_INSET);
 }
 
 const splashTargets = [
@@ -70,5 +106,5 @@ const splashTargets = [
 ];
 
 for (const target of splashTargets) {
-  await writePng(mainIconSvg, target.path, target.width, target.height);
+  await writeInsetPng(mainIconSvg, target.path, target.width, target.height, ANDROID_SPLASH_INSET);
 }
