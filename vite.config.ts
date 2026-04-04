@@ -20,7 +20,7 @@ export default defineConfig(async ({ command }) => {
   ];
 
   // HTTPS only in dev — needed for Geolocation API on non-localhost mobile
-  if (command === 'serve') {
+  if (command === 'serve' && process.env.VITE_DEV_SSL !== '0') {
     const { default: basicSsl } = await import('@vitejs/plugin-basic-ssl');
     plugins.unshift(basicSsl() as PluginOption);
   }

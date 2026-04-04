@@ -32,4 +32,12 @@ describe('mobile layout regressions', () => {
     expect(css).toMatch(/overflow-x:\s*auto/);
     expect(css).toMatch(/min-width:\s*100%/);
   });
+
+  it('keeps the mobile screen fixed-height and gives the heatmap the flexible space', () => {
+    const css = readFileSync('/Users/szymonkocot/Projects/fpv-blast/src/app.css', 'utf8');
+
+    expect(css).toMatch(/\.main-column\s*\{[^}]*overflow-y:\s*hidden/s);
+    expect(css).toMatch(/\.chart-area\s*\{[^}]*flex:\s*1/s);
+    expect(css).toMatch(/\.chart-area\s*\{[^}]*min-height:\s*0/s);
+  });
 });

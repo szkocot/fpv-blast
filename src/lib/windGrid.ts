@@ -1,6 +1,6 @@
 // src/lib/windGrid.ts
-import type { WindGrid, FlyingWindow } from './types';
-import { YELLOW_FRACTION } from './types';
+import type { SelectedHourForecast, WindGrid, FlyingWindow, FlightVerdict } from './types';
+import { DISPLAY_HEIGHTS, YELLOW_FRACTION } from './types';
 
 export function sliceGrid(grid: WindGrid, hourOffset: number): number[][] {
   const start = Math.max(0, hourOffset);
@@ -42,6 +42,43 @@ export function bestFlyingWindow(grid: WindGrid, thresholdKmh: number): FlyingWi
   if (lowGreen) return { ...lowGreen, mode: 'lowOnly' };
 
   return null;
+}
+
+export function selectedHourForecast(
+  grid: WindGrid,
+  hourOffset: number,
+  thresholdKmh: number
+): SelectedHourForecast {
+  const hourIndex = Math.max(0, Math.min(hourOffset, grid.times.length - 1));
+  const row = grid.data[hourIndex] ?? [];
+  let peakWindKmh = row[0] ?? 0;
+  let peakIndex = 0;
+
+  for (let hi = 1; hi < row.length; hi++) {
+    if (row[hi] > peakWindKmh) {
+      peakWindKmh = row[hi];
+      peakIndex = hi;
+    }
+  }
+
+  const ratio = peakWindKmh / thresholdKmh;
+  const verdict: FlightVerdict = ratio < YELLOW_FRACTION
+    ? 'fly'
+    : ratio < 1
+      ? 'marginal'
+      : 'nofly';
+  const peakHeightM = DISPLAY_HEIGHTS[peakIndex] ?? 10;
+
+  return {
+    time: grid.times[hourIndex] ?? new Date(0),
+    wind10mKmh: row[0] ?? 0,
+    gust10mKmh: grid.windGust[hourIndex] ?? 0,
+    temperatureC: grid.temperature[hourIndex] ?? 0,
+    peakWindKmh,
+    peakHeightM,
+    verdict,
+    blockerLabel: `${peakWindKmh.toFixed(0)} km/h @ ${peakHeightM}m`,
+  };
 }
 
 function longestRun(

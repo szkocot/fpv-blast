@@ -2,10 +2,15 @@
 <script lang="ts">
   import { t } from '../i18n';
   import { convertFromKmh } from '../stores/settingsStore';
-  import type { WindUnit } from '../types';
+  import type { KpData, TempUnit, WindGrid, WindUnit } from '../types';
+  import SelectedHourDetails from './SelectedHourDetails.svelte';
 
+  export let grid: WindGrid;
+  export let hourOffset: number;
   export let thresholdKmh: number;
   export let unit: WindUnit;
+  export let tempUnit: TempUnit;
+  export let kpData: KpData | null;
   export let onSettings: () => void;
 
   $: displayThreshold = convertFromKmh(thresholdKmh, unit).toFixed(0);
@@ -19,6 +24,15 @@
 </script>
 
 <aside class="utility-rail" aria-label="Desktop utility rail">
+  <SelectedHourDetails
+    {grid}
+    {hourOffset}
+    {thresholdKmh}
+    windUnit={unit}
+    {tempUnit}
+    {kpData}
+  />
+
   <div class="rail-section rail-actions">
     <button class="settings-btn" on:click={onSettings}>
       <span class="gear" aria-hidden="true">⚙</span>

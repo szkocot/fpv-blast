@@ -102,6 +102,7 @@ html, body {
   min-width: 0;
   min-height: 0;
   flex-direction: column;
+  overflow-y: hidden;
 }
 
 .chart-area {
@@ -134,6 +135,12 @@ html, body {
     gap: 0;
     width: min(100%, 1040px);
     justify-self: start;
+    overflow-y: visible;
+  }
+
+  .chart-area {
+    flex: 1;
+    min-height: 0;
   }
 
   .desktop-rail {

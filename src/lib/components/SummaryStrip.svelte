@@ -1,9 +1,8 @@
 <!-- src/lib/components/SummaryStrip.svelte -->
 <script lang="ts">
   import { t } from '../i18n';
-  import { nowAt10m, peakInWindow, bestFlyingWindow } from '../windGrid';
-  import { convertFromKmh, windColor } from '../stores/settingsStore';
-  import { DISPLAY_HEIGHTS } from '../types';
+  import { bestFlyingWindow, selectedHourForecast } from '../windGrid';
+  import { convertFromKmh } from '../stores/settingsStore';
   import type { WindGrid, WindUnit } from '../types';
 
   export let grid: WindGrid;
@@ -11,8 +10,7 @@
   export let thresholdKmh: number;
   export let unit: WindUnit;
 
-  $: now    = nowAt10m(grid);
-  $: peak   = peakInWindow(grid, hourOffset);
+  $: forecast = selectedHourForecast(grid, hourOffset, thresholdKmh);
   $: window = bestFlyingWindow(grid, thresholdKmh);
 
   $: displaySpeed = (kmh: number) => convertFromKmh(kmh, unit).toFixed(0);
@@ -26,17 +24,15 @@
 </script>
 
 <div class="strip">
-  <!-- Now @10m -->
-  <div class="card {colorClass(now)}">
-    <span class="label">{$t.nowAt10m}</span>
-    <span class="value">{displaySpeed(now)}</span>
-    <span class="sub">{unit === 'kmh' ? 'km/h' : unit === 'ms' ? 'm/s' : 'kn'} {now / thresholdKmh < 0.8 ? '✓' : now / thresholdKmh < 1 ? '⚠' : '✗'}</span>
+  <div class="card hero-card {forecast.verdict === 'fly' ? 'green' : forecast.verdict === 'marginal' ? 'yellow' : 'red'}">
+    <span class="label">{$t.selectedHour}</span>
+    <span class="value verdict-value">{$t.flightVerdicts[forecast.verdict]}</span>
+    <span class="sub">{$t.limitDriver}: {forecast.blockerLabel}</span>
   </div>
 
-  <!-- Peak -->
-  <div class="card {peak ? colorClass(peak.speed) : 'green'}">
-    <span class="label">{$t.peak} · {peak ? DISPLAY_HEIGHTS[peak.heightIndex] : 0}m</span>
-    <span class="value">{peak ? displaySpeed(peak.speed) : '—'}</span>
+  <div class="card {colorClass(forecast.peakWindKmh)}">
+    <span class="label">{$t.peak} · {forecast.peakHeightM}m</span>
+    <span class="value">{displaySpeed(forecast.peakWindKmh)}</span>
     <span class="sub">{unit === 'kmh' ? 'km/h' : unit === 'ms' ? 'm/s' : 'kn'}</span>
   </div>
 
@@ -82,6 +78,15 @@
   .card.green .value  { color: var(--green); }
   .card.yellow .value { color: var(--yellow); }
   .card.red .value    { color: var(--red); }
+
+  .hero-card {
+    flex: 1.35;
+  }
+
+  .verdict-value {
+    font-size: 20px;
+    letter-spacing: 0.04em;
+  }
 
   @media (min-width: 1024px) {
     .strip {

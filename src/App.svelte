@@ -16,6 +16,7 @@
   import LocationPicker from './lib/components/LocationPicker.svelte';
   import ErrorBanner     from './lib/components/ErrorBanner.svelte';
   import DesktopUtilityRail from './lib/components/DesktopUtilityRail.svelte';
+  import SelectedHourDetails from './lib/components/SelectedHourDetails.svelte';
   import WeatherStrip from './lib/components/WeatherStrip.svelte';
 
   let showSettings = false;
@@ -160,6 +161,18 @@
           kpData={$kpStore}
         />
 
+        <div class="mobile-hour-details">
+          <SelectedHourDetails
+            grid={$windGrid}
+            hourOffset={$hourOffset}
+            thresholdKmh={$settingsStore.thresholdKmh}
+            windUnit={$settingsStore.unit}
+            tempUnit={$settingsStore.tempUnit}
+            kpData={$kpStore}
+            compact
+          />
+        </div>
+
         <TimeSlider
           grid={$windGrid}
           hourOffset={$hourOffset}
@@ -178,8 +191,12 @@
 
       <div class="desktop-rail">
         <DesktopUtilityRail
+          grid={$windGrid}
+          hourOffset={$hourOffset}
           thresholdKmh={$settingsStore.thresholdKmh}
           unit={$settingsStore.unit}
+          tempUnit={$settingsStore.tempUnit}
+          kpData={$kpStore}
           onSettings={() => showSettings = true}
         />
       </div>
@@ -237,5 +254,16 @@
     border-top-color: var(--blue); border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
+
+  .mobile-hour-details {
+    display: none;
+  }
+
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (min-width: 1024px) {
+    .mobile-hour-details {
+      display: none;
+    }
+  }
 </style>

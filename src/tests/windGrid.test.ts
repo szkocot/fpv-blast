@@ -1,6 +1,12 @@
 // src/tests/windGrid.test.ts
 import { describe, it, expect } from 'vitest';
-import { sliceGrid, nowAt10m, peakInWindow, bestFlyingWindow } from '../lib/windGrid';
+import {
+  bestFlyingWindow,
+  nowAt10m,
+  peakInWindow,
+  selectedHourForecast,
+  sliceGrid,
+} from '../lib/windGrid';
 import type { WindGrid } from '../lib/types';
 
 function makeGrid(value: number, hours = 48): WindGrid {
@@ -65,5 +71,35 @@ describe('bestFlyingWindow', () => {
 
   it('returns null when always windy', () => {
     expect(bestFlyingWindow(makeGrid(99, 24), 25)).toBeNull();
+  });
+});
+
+describe('selectedHourForecast', () => {
+  it('summarizes selected-hour wind, gust, temperature, and peak height', () => {
+    const g = makeGrid(12, 24);
+    g.times[3] = new Date('2026-04-04T15:00:00Z');
+    g.data[3][0] = 18;
+    g.data[3][5] = 31;
+    g.windGust[3] = 27;
+    g.temperature[3] = 14;
+
+    expect(selectedHourForecast(g, 3, 35)).toEqual({
+      time: new Date('2026-04-04T15:00:00Z'),
+      wind10mKmh: 18,
+      gust10mKmh: 27,
+      temperatureC: 14,
+      peakWindKmh: 31,
+      peakHeightM: 60,
+      verdict: 'marginal',
+      blockerLabel: '31 km/h @ 60m',
+    });
+  });
+
+  it('marks safe and no-fly states from the selected-hour peak wind', () => {
+    const safeGrid = makeGrid(10, 24);
+    const windyGrid = makeGrid(40, 24);
+
+    expect(selectedHourForecast(safeGrid, 0, 25).verdict).toBe('fly');
+    expect(selectedHourForecast(windyGrid, 0, 25).verdict).toBe('nofly');
   });
 });

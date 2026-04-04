@@ -35,6 +35,19 @@ export interface FlyingWindow {
   mode: 'allHeights' | 'lowOnly';
 }
 
+export type FlightVerdict = 'fly' | 'marginal' | 'nofly';
+
+export interface SelectedHourForecast {
+  time: Date;
+  wind10mKmh: number;
+  gust10mKmh: number;
+  temperatureC: number;
+  peakWindKmh: number;
+  peakHeightM: number;
+  verdict: FlightVerdict;
+  blockerLabel: string;
+}
+
 export interface Settings {
   thresholdKmh: number;
   unit: WindUnit;

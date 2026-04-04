@@ -47,10 +47,13 @@ export const en = {
   threshold: 'Threshold',
   legend: 'Legend',
   legendNoFly: 'No-fly',
+  selectedHour: 'Selected hour',
+  strongestLayer: 'Strongest layer',
+  limitDriver: 'Limiter',
+  flightVerdicts: { fly: 'FLY', marginal: 'MARGINAL', nofly: 'NO-FLY' },
   gustsAt10m: 'Gusts @ 10m',
   kpQuiet: 'Quiet',
   kpActive: 'Active',
   kpStorm: 'Storm',
   kpForecast: 'Kp forecast — 3 days',
 };
-
