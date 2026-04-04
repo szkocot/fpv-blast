@@ -21,7 +21,7 @@
   header {
     display: flex; justify-content: space-between; align-items: center;
     gap: 12px;
-    padding: calc(10px + var(--safe-top)) 16px 10px;
+    padding: 10px 16px;
     background: var(--surface2);
     border-bottom: 1px solid var(--border);
   }

@@ -216,7 +216,10 @@
 <style>
   .app-shell {
     display: flex; flex-direction: column;
-    height: 100%; overflow: hidden;
+    height: 100dvh;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+    overflow: hidden;
     background: var(--bg);
   }
 

@@ -37,4 +37,16 @@ describe('parseKpResponse', () => {
     ];
     expect(parseKpResponse(bad)).toHaveLength(1);
   });
+
+  it('parses NOAA object rows from the live endpoint shape', () => {
+    const result = parseKpResponse([
+      { time_tag: '2026-04-04T15:00:00', kp: 1.67, observed: 'observed', noaa_scale: null },
+      { time_tag: '2026-04-04T18:00:00', kp: 3, observed: 'estimated', noaa_scale: null },
+    ]);
+
+    expect(result).toEqual([
+      { time: new Date('2026-04-04T15:00:00Z'), kp: 1.67 },
+      { time: new Date('2026-04-04T18:00:00Z'), kp: 3 },
+    ]);
+  });
 });

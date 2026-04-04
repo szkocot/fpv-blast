@@ -8,10 +8,12 @@ function compiledCss(path: string): string {
 }
 
 describe('mobile layout regressions', () => {
-  it('pads the header for iPhone PWA safe areas', () => {
-    const css = compiledCss('/Users/szymonkocot/Projects/fpv-blast/src/lib/components/AppHeader.svelte');
+  it('pads the app shell for iPhone PWA safe areas in all app states', () => {
+    const css = compiledCss('/Users/szymonkocot/Projects/fpv-blast/src/App.svelte');
 
-    expect(css).toMatch(/padding:\s*calc\(10px \+ var\(--safe-top\)\)\s+16px\s+10px/);
+    expect(css).toMatch(/padding-top:\s*var\(--safe-top\)/);
+    expect(css).toMatch(/padding-bottom:\s*var\(--safe-bottom\)/);
+    expect(css).toMatch(/height:\s*100dvh/);
   });
 
   it('keeps the weather strip readable on narrow screens', () => {
