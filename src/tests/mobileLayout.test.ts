@@ -40,4 +40,11 @@ describe('mobile layout regressions', () => {
     expect(css).toMatch(/\.chart-area\s*\{[^}]*flex:\s*1/s);
     expect(css).toMatch(/\.chart-area\s*\{[^}]*min-height:\s*0/s);
   });
+
+  it('pads the location picker controls away from iPhone notch and home indicator', () => {
+    const css = compiledCss('/Users/szymonkocot/Projects/fpv-blast/src/lib/components/LocationPicker.svelte');
+
+    expect(css).toMatch(/padding:\s*calc\(10px \+ var\(--safe-top\)\)\s+12px\s+10px/);
+    expect(css).toMatch(/padding:\s*12px\s+16px\s+calc\(12px \+ var\(--safe-bottom\)\)/);
+  });
 });

@@ -139,7 +139,7 @@
 
   .top-bar {
     display: flex; align-items: center; gap: 10px;
-    padding: 10px 12px;
+    padding: calc(10px + var(--safe-top)) 12px 10px;
     background: var(--surface);
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
@@ -195,7 +195,7 @@
 
   .bottom-bar {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 16px;
+    padding: 12px 16px calc(12px + var(--safe-bottom));
     background: var(--surface);
     border-top: 1px solid var(--border);
     flex-shrink: 0;
