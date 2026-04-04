@@ -12,7 +12,8 @@ describe('mobile layout regressions', () => {
     const css = compiledCss('/Users/szymonkocot/Projects/fpv-blast/src/App.svelte');
 
     expect(css).toMatch(/padding-top:\s*var\(--safe-top\)/);
-    expect(css).toMatch(/padding-bottom:\s*var\(--safe-bottom\)/);
+    expect(css).not.toMatch(/\.app-shell(?:\.[\w-]+)?\s*\{[^}]*padding-bottom:\s*var\(--safe-bottom\)/s);
+    expect(css).toMatch(/\.full-screen-msg(?:\.[\w-]+)?\s*\{[^}]*padding-bottom:\s*calc\(32px \+ var\(--safe-bottom\)\)/s);
     expect(css).toMatch(/height:\s*100dvh/);
   });
 

@@ -235,7 +235,6 @@
     display: flex; flex-direction: column;
     height: 100dvh;
     padding-top: var(--safe-top);
-    padding-bottom: var(--safe-bottom);
     overflow: hidden;
     background: var(--bg);
   }
@@ -243,7 +242,10 @@
   .full-screen-msg {
     flex: 1; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: 12px; padding: 32px; text-align: center;
+    gap: 12px;
+    padding: 32px;
+    padding-bottom: calc(32px + var(--safe-bottom));
+    text-align: center;
     color: var(--text-muted);
   }
   .icon  { font-size: 48px; }
