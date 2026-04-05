@@ -1,11 +1,15 @@
 <!-- src/App.svelte -->
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
+  import type { Map as MapLibreMap } from 'maplibre-gl';
   import { t } from './lib/i18n';
   import { windGrid, fetchState, hourOffset, fetchWind, locationName } from './lib/stores/windStore';
   import { settingsStore, haversineKm } from './lib/stores/settingsStore';
-  import { reverseGeocode } from './lib/services/geocoder';
+  import { forwardGeocode, reverseGeocode, type GeoResult } from './lib/services/geocoder';
   import { kpStore, fetchKp } from './lib/stores/kpStore';
+  import { createMapOverlayController } from './lib/stores/mapOverlayStore';
+  import { densityForZoom } from './lib/services/mapOverlay';
+  import { currentHourIndex } from './lib/windGrid';
 
   import AppHeader       from './lib/components/AppHeader.svelte';
   import SummaryStrip    from './lib/components/SummaryStrip.svelte';
@@ -13,25 +17,32 @@
   import TimeSlider      from './lib/components/TimeSlider.svelte';
   import ThresholdFooter from './lib/components/ThresholdFooter.svelte';
   import SettingsSheet   from './lib/components/SettingsSheet.svelte';
-  import LocationPicker from './lib/components/LocationPicker.svelte';
+  import WindMap from './lib/components/WindMap.svelte';
   import ErrorBanner     from './lib/components/ErrorBanner.svelte';
   import DesktopUtilityRail from './lib/components/DesktopUtilityRail.svelte';
   import SelectedHourDetails from './lib/components/SelectedHourDetails.svelte';
   import WeatherStrip from './lib/components/WeatherStrip.svelte';
 
   let showSettings = false;
-  let showLocationPicker = false;
+  let showWindMap = false;
 
   let lastFetchLat: number | null = null;
   let lastFetchLon: number | null = null;
+  let lastKnownLocationName = '';
+  let windMapInstance: MapLibreMap | null = null;
+  let latestViewportRequest = 0;
+  let searchQuery = '';
+  let searchResults: GeoResult[] = [];
+  let searchAttempted = false;
+  let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+  let viewportBounds: { west: number; south: number; east: number; north: number } | null = null;
+  let viewportZoom = 0;
+  let lastGridSignature = '';
+
+  const mapOverlay = createMapOverlayController();
 
   // Tracks the location config key at last fetch — empty until onMount fires
   let _lastFetchedKey = '';
-
-  // Open picker automatically when in Custom mode with no saved location
-  $: if ($settingsStore.locationMode === 'custom' && !$settingsStore.customLocation && !showLocationPicker) {
-    showLocationPicker = true;
-  }
 
   // Re-fetch when locationMode or customLocation changes after initial mount
   $: {
@@ -39,6 +50,29 @@
     if (_lastFetchedKey && key !== _lastFetchedKey) {
       _lastFetchedKey = key;
       requestLocation();
+    }
+  }
+
+  $: if (showWindMap && viewportBounds) {
+    void mapOverlay.loadOverlayForViewport({
+      bounds: {
+        north: viewportBounds.north,
+        south: viewportBounds.south,
+        east: viewportBounds.east,
+        west: viewportBounds.west,
+      },
+      zoom: viewportZoom,
+      hourIndex: $hourOffset,
+    });
+  }
+
+  $: if ($windGrid) {
+    const signature = `${$windGrid.times[0]?.getTime() ?? 0}:${$windGrid.times.length}`;
+    if (signature !== lastGridSignature) {
+      lastGridSignature = signature;
+      const currentIndex = currentHourIndex($windGrid);
+      hourOffset.set(currentIndex);
+      mapOverlay.setSelectedHour(currentIndex);
     }
   }
 
@@ -62,7 +96,10 @@
     lastFetchLat = lat;
     lastFetchLon = lon;
     fetchWind(lat, lon);
-    reverseGeocode(lat, lon).then(name => locationName.set(name));
+    reverseGeocode(lat, lon).then(name => {
+      lastKnownLocationName = name;
+      locationName.set(name);
+    });
   }
 
   function fetchCustomLocation(lat: number, lon: number, name: string) {
@@ -71,7 +108,108 @@
     lastFetchLat = null;
     lastFetchLon = null;
     fetchWind(lat, lon);
+    lastKnownLocationName = name;
     locationName.set(name);
+  }
+
+  function currentLocation() {
+    if ($settingsStore.locationMode === 'custom' && $settingsStore.customLocation) {
+      return $settingsStore.customLocation;
+    }
+    if (lastFetchLat !== null && lastFetchLon !== null) {
+      return {
+        lat: lastFetchLat,
+        lon: lastFetchLon,
+        name: lastKnownLocationName || $locationName || $t.currentLocation,
+      };
+    }
+    if ($settingsStore.customLocation) {
+      return $settingsStore.customLocation;
+    }
+    return { lat: 50.2965, lon: 18.9546, name: 'Chorzów, Poland' };
+  }
+
+  function openWindMap() {
+    const current = currentLocation();
+    const currentIndex = $windGrid ? currentHourIndex($windGrid) : 0;
+    mapOverlay.openAtLocation(current);
+    mapOverlay.setMode($settingsStore.locationMode);
+    if ($windGrid && ($hourOffset < 0 || $hourOffset >= $windGrid.times.length || $hourOffset === 0)) {
+      hourOffset.set(currentIndex);
+    }
+    mapOverlay.setSelectedHour($windGrid ? currentHourIndex($windGrid) : $hourOffset);
+    searchQuery = '';
+    searchResults = [];
+    searchAttempted = false;
+    viewportBounds = null;
+    viewportZoom = 0;
+    showWindMap = true;
+  }
+
+  function closeWindMap() {
+    showWindMap = false;
+    windMapInstance = null;
+    searchQuery = '';
+    searchResults = [];
+    searchAttempted = false;
+  }
+
+  function onWindMapSearchChange(value: string) {
+    searchQuery = value;
+    if (searchTimeout) clearTimeout(searchTimeout);
+    if (value.trim().length < 2) {
+      searchResults = [];
+      searchAttempted = false;
+      return;
+    }
+    searchTimeout = setTimeout(async () => {
+      searchResults = await forwardGeocode(value.trim());
+      searchAttempted = true;
+    }, 250);
+  }
+
+  function onWindMapSearchSelect(result: GeoResult) {
+    searchQuery = result.name;
+    searchResults = [];
+    searchAttempted = false;
+    mapOverlay.setMapCenter(result);
+    windMapInstance?.flyTo({ center: [result.lon, result.lat], zoom: Math.max(windMapInstance.getZoom(), 9) });
+  }
+
+  function onWindMapViewportChange(viewport: {
+    center: { lng: number; lat: number };
+    zoom: number;
+    bounds: { west: number; south: number; east: number; north: number } | null;
+  }) {
+    viewportBounds = viewport.bounds;
+    viewportZoom = viewport.zoom;
+    const requestId = ++latestViewportRequest;
+    reverseGeocode(viewport.center.lat, viewport.center.lng).then((name) => {
+      if (requestId !== latestViewportRequest) return;
+      mapOverlay.setMapCenter({ lat: viewport.center.lat, lon: viewport.center.lng, name });
+    });
+  }
+
+  function commitWindMapSelection() {
+    if ($mapOverlay.mode === 'auto') {
+      settingsStore.update((s) => ({ ...s, locationMode: 'auto' }));
+      closeWindMap();
+      return;
+    }
+
+    const next = $mapOverlay.pendingCustomLocation ?? {
+      lat: $mapOverlay.mapCenter.lat,
+      lon: $mapOverlay.mapCenter.lon,
+      name: $mapOverlay.mapCenter.name ?? $t.selectedSpot,
+    };
+
+    mapOverlay.confirmCustomLocation();
+    settingsStore.update((s) => ({
+      ...s,
+      locationMode: 'custom',
+      customLocation: next,
+    }));
+    closeWindMap();
   }
 
   function requestLocation() {
@@ -83,8 +221,9 @@
     if (mode === 'custom') {
       if (custom) {
         fetchCustomLocation(custom.lat, custom.lon, custom.name);
+      } else {
+        settingsStore.update((s) => ({ ...s, locationMode: 'auto' }));
       }
-      // No custom location yet — picker will open via reactive statement above
       return;
     }
 
@@ -103,9 +242,18 @@
     requestLocation();
     fetchKp();
     _lastFetchedKey = $settingsStore.locationMode + '|' + JSON.stringify($settingsStore.customLocation);
-    document.addEventListener('visibilitychange', () => {
+    const onVisibilityChange = () => {
       if (document.visibilityState === 'visible') requestLocation();
-    });
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  });
+
+  onDestroy(() => {
+    if (searchTimeout) clearTimeout(searchTimeout);
   });
 </script>
 
@@ -127,7 +275,7 @@
     <!-- Main UI -->
     <div class="desktop-shell">
       <div class="main-column">
-        <AppHeader locationName={$locationName} />
+        <AppHeader locationName={$locationName} onOpenMap={openWindMap} />
 
         {#if $fetchState.modelCount < 6}
           <ErrorBanner
@@ -209,22 +357,63 @@
       modelCount={$fetchState.type === 'loaded' ? $fetchState.modelCount : 0}
       onClose={() => showSettings = false}
       onChange={patch => settingsStore.update(s => ({ ...s, ...patch }))}
-      onOpenPicker={() => { showSettings = false; showLocationPicker = true; }}
     />
   {/if}
 
-  {#if showLocationPicker}
-    <LocationPicker
-      initialLocation={$settingsStore.customLocation}
-      onConfirm={(loc) => {
-        settingsStore.update(s => ({ ...s, customLocation: loc }));
-        showLocationPicker = false;
-      }}
-      onClose={() => {
-        showLocationPicker = false;
-        if (!$settingsStore.customLocation) {
-          settingsStore.update(s => ({ ...s, locationMode: 'auto' }));
+  {#if showWindMap}
+    <WindMap
+      mode={$mapOverlay.mode}
+      locationLabel={$mapOverlay.mode === 'custom'
+        ? ($mapOverlay.pendingCustomLocation?.name ?? $mapOverlay.mapCenter.name ?? $mapOverlay.activeLocation.name)
+        : ($mapOverlay.mapCenter.name ?? $mapOverlay.activeLocation.name)}
+      searchValue={searchQuery}
+      searchResults={searchResults}
+      searchAttempted={searchAttempted}
+      selectedHourLabel={$windGrid ? $windGrid.times[$hourOffset]?.toLocaleString($t.dateLocale, { weekday: 'short', hour: '2-digit', minute: '2-digit' }) ?? $t.now : $t.now}
+      isCurrentHourSelected={$windGrid ? $hourOffset === currentHourIndex($windGrid) : true}
+      hourChips={$windGrid
+        ? Array.from({ length: 5 }, (_, index) => {
+            const offset = Math.min($hourOffset + index, $windGrid.times.length - 1);
+            const date = $windGrid.times[offset];
+            return {
+              id: String(offset),
+              label: date.toLocaleTimeString($t.dateLocale, { hour: '2-digit', minute: '2-digit' }),
+              sublabel: offset === currentHourIndex($windGrid) ? $t.now : date.toLocaleDateString($t.dateLocale, { weekday: 'short' }),
+              active: offset === $hourOffset,
+            };
+          })
+        : []}
+      overlaySamples={$mapOverlay.overlayState.type === 'loaded' ? $mapOverlay.overlayState.samples : []}
+      overlayBounds={viewportBounds ? { north: viewportBounds.north, south: viewportBounds.south, east: viewportBounds.east, west: viewportBounds.west } : null}
+      overlayThresholdKmh={$settingsStore.thresholdKmh}
+      overlayDensity={densityForZoom(viewportZoom || 0)}
+      overlayStatusLabel={$mapOverlay.overlayState.type === 'failed' ? $mapOverlay.overlayState.message : ''}
+      initialCenter={[$mapOverlay.activeLocation.lon, $mapOverlay.activeLocation.lat]}
+      initialZoom={$mapOverlay.activeLocation.lat === 0 && $mapOverlay.activeLocation.lon === 0 ? 2 : 9}
+      primaryActionLabel={$mapOverlay.mode === 'custom' ? $t.useThisSpot : $t.useGps}
+      secondaryActionLabel={$t.close}
+      onBack={closeWindMap}
+      onSearchChange={onWindMapSearchChange}
+      onSearchSelect={onWindMapSearchSelect}
+      onModeChange={(mode) => mapOverlay.setMode(mode)}
+      onHourSelect={(id) => {
+        if (id === 'now') {
+          const currentIndex = $windGrid ? currentHourIndex($windGrid) : 0;
+          hourOffset.set(currentIndex);
+          mapOverlay.setSelectedHour(currentIndex);
+          return;
         }
+        const next = Number(id);
+        if (Number.isFinite(next)) {
+          hourOffset.set(next);
+          mapOverlay.setSelectedHour(next);
+        }
+      }}
+      onPrimaryAction={commitWindMapSelection}
+      onSecondaryAction={closeWindMap}
+      onViewportChange={onWindMapViewportChange}
+      onMapReady={(map) => {
+        windMapInstance = map;
       }}
     />
   {/if}

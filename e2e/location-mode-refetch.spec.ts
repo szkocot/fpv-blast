@@ -2,16 +2,54 @@ import { test, expect } from '@playwright/test';
 
 const BASE = 'https://localhost:5175/';
 
-test('switching location mode triggers a re-fetch', async ({ page, context }) => {
-  // --- grant geolocation and mock GPS position ---
-  await context.grantPermissions(['geolocation']);
-  await context.setGeolocation({ latitude: 52.23, longitude: 21.01 }); // Warsaw
+function mockForecastPayload() {
+  const time = Array.from({ length: 24 }, (_, index) => `2026-04-05T${String(index).padStart(2, '0')}:00`);
+  const wind10 = Array.from({ length: 24 }, (_, index) => 12 + (index % 4));
+  const wind80 = Array.from({ length: 24 }, (_, index) => 18 + (index % 4));
 
-  // Intercept wind API calls and count them
-  const fetchCalls: string[] = [];
-  await page.route('**/v1/forecast**', (route) => {
-    fetchCalls.push(route.request().url());
-    route.continue();
+  return {
+    hourly: {
+      time,
+      wind_speed_10m: wind10,
+      wind_speed_80m: wind80,
+      wind_speed_120m: wind80.map((value) => value + 3),
+      wind_speed_180m: wind80.map((value) => value + 6),
+      wind_direction_10m: Array.from({ length: 24 }, () => 180),
+      wind_direction_80m: Array.from({ length: 24 }, () => 210),
+      temperature_2m: Array.from({ length: 24 }, () => 17),
+      weather_code: Array.from({ length: 24 }, () => 1),
+      wind_gusts_10m: wind10.map((value) => value + 4),
+    },
+  };
+}
+
+test('wind map keeps auto browsing temporary and refetches on committed mode changes', async ({ page, context }) => {
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({ latitude: 52.23, longitude: 21.01 });
+
+  const mainFetchCalls: string[] = [];
+
+  await page.route('**/v1/forecast**', async (route) => {
+    const url = route.request().url();
+    if (url.includes('wind_speed_120m')) {
+      mainFetchCalls.push(url);
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(mockForecastPayload()),
+    });
+  });
+
+  await page.route('**/reverse-geocode-client**', async (route) => {
+    const url = new URL(route.request().url());
+    const lat = Number(url.searchParams.get('latitude'));
+    const city = lat > 51 ? 'Warsaw' : 'Krakow';
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ city, countryName: 'Poland' }),
+    });
   });
 
   await page.addInitScript(() => {
@@ -23,55 +61,33 @@ test('switching location mode triggers a re-fetch', async ({ page, context }) =>
       language: 'en',
       tempUnit: 'celsius',
       locationMode: 'auto',
-      customLocation: { lat: 50.06, lon: 19.94, name: 'Krakow, Poland' }
+      customLocation: { lat: 50.06, lon: 19.94, name: 'Krakow, Poland' },
     }));
   });
 
   await page.goto(BASE);
+  await expect(page.getByText('Warsaw, Poland').first()).toBeVisible({ timeout: 10_000 });
 
-  // Wait for initial load to settle
-  await page.waitForTimeout(3000);
-  const callsAfterMount = fetchCalls.length;
-  console.log(`Calls after initial load: ${callsAfterMount}`);
-  console.log('URLs:', fetchCalls);
+  const afterInitialLoad = mainFetchCalls.length;
 
-  // Open settings
-  await page.getByRole('button', { name: /settings|gear|⚙/i }).first().click();
-  await expect(page.locator('.settings-sheet, [class*="sheet"]').first()).toBeVisible({ timeout: 3000 }).catch(() => {});
+  await page.getByRole('button', { name: /map/i }).click();
+  await page.waitForTimeout(500);
+  expect(mainFetchCalls.length).toBe(afterInitialLoad);
 
-  // Take screenshot of settings sheet
-  await page.screenshot({ path: '/tmp/settings-open.png' });
+  const beforeCustomCommit = mainFetchCalls.length;
+  await page.locator('.mode-toggle button').nth(1).evaluate((element: HTMLButtonElement) => element.click());
+  await expect(page.getByRole('button', { name: /use this spot/i })).toBeVisible({ timeout: 10_000 });
+  await page.getByRole('button', { name: /use this spot/i }).click();
 
-  // Click "Custom" location mode button
-  const customBtn = page.getByRole('button', { name: /custom|własna/i });
-  const countBefore = fetchCalls.length;
-  console.log(`\nAbout to click Custom. Calls so far: ${countBefore}`);
-  await customBtn.click();
-  await page.waitForTimeout(2000);
-  const countAfterCustom = fetchCalls.length;
-  console.log(`After switching to Custom: ${countAfterCustom} total calls (${countAfterCustom - countBefore} new)`);
+  await expect(page.getByText('Warsaw, Poland').first()).toBeVisible({ timeout: 10_000 });
+  await expect.poll(() => mainFetchCalls.length).toBeGreaterThan(beforeCustomCommit);
 
-  // Click "Auto (GPS)" button
-  const autoBtn = page.getByRole('button', { name: 'Auto (GPS)' });
-  const countBeforeAuto = fetchCalls.length;
-  console.log(`\nAbout to click Auto. Calls so far: ${countBeforeAuto}`);
-  await autoBtn.click();
-  await page.waitForTimeout(2000);
-  const countAfterAuto = fetchCalls.length;
-  console.log(`After switching to Auto: ${countAfterAuto} total calls (${countAfterAuto - countBeforeAuto} new)`);
+  await page.getByRole('button', { name: /map/i }).click();
+  const beforeAutoCommit = mainFetchCalls.length;
+  await page.locator('.mode-toggle button').nth(0).evaluate((element: HTMLButtonElement) => element.click());
+  await expect(page.getByRole('button', { name: /use gps/i })).toBeVisible({ timeout: 10_000 });
+  await page.getByRole('button', { name: /use gps/i }).click();
 
-  // Final screenshot
-  await page.screenshot({ path: '/tmp/after-auto.png' });
-
-  console.log('\n--- SUMMARY ---');
-  console.log(`Initial load: ${callsAfterMount} fetch calls`);
-  console.log(`After → Custom: +${countAfterCustom - countBefore} fetch calls`);
-  console.log(`After → Auto:   +${countAfterAuto - countBeforeAuto} fetch calls`);
-  console.log('All intercepted URLs:');
-  fetchCalls.forEach((u, i) => console.log(`  [${i}] ${u}`));
-
-  // The bug: switching modes produces 0 new fetch calls
-  // This assertion documents what SHOULD happen after the fix:
-  expect(countAfterCustom - countBefore, 'switching to Custom should trigger a re-fetch').toBeGreaterThan(0);
-  expect(countAfterAuto - countBeforeAuto, 'switching to Auto should trigger a re-fetch').toBeGreaterThan(0);
+  await expect(page.getByText('Warsaw, Poland').first()).toBeVisible({ timeout: 10_000 });
+  await expect.poll(() => mainFetchCalls.length).toBeGreaterThan(beforeAutoCommit);
 });

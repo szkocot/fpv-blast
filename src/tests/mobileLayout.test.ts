@@ -48,4 +48,30 @@ describe('mobile layout regressions', () => {
     expect(css).toMatch(/padding:\s*calc\(10px \+ var\(--safe-top\)\)\s+12px\s+10px/);
     expect(css).toMatch(/padding:\s*12px\s+16px\s+calc\(12px \+ var\(--safe-bottom\)\)/);
   });
+
+  it('keeps the wind map controls away from iPhone safe areas', () => {
+    const css = compiledCss('/Users/szymonkocot/Projects/fpv-blast/src/lib/components/MapOverlayCanvas.svelte');
+
+    expect(css).toMatch(/pointer-events:\s*none/);
+  });
+
+  it('rerenders the wind overlay when viewport data changes', () => {
+    const source = readFileSync('/Users/szymonkocot/Projects/fpv-blast/src/lib/components/MapOverlayCanvas.svelte', 'utf8');
+
+    expect(source).toMatch(/\$:\s*\{[\s\S]*samples;[\s\S]*bounds;[\s\S]*thresholdKmh;[\s\S]*density;[\s\S]*queueRender\(\);[\s\S]*\}/);
+  });
+
+  it('pads the wind map chrome away from the notch and home indicator', () => {
+    const css = compiledCss('/Users/szymonkocot/Projects/fpv-blast/src/lib/components/WindMap.svelte');
+
+    expect(css).toMatch(/padding:\s*calc\(10px \+ var\(--safe-top\)\)\s+12px\s+10px/);
+    expect(css).toMatch(/padding:\s*12px\s+16px\s+calc\(12px \+ var\(--safe-bottom\)\)/);
+  });
+
+  it('opens the wind map with the active location as initial center', () => {
+    const source = readFileSync('/Users/szymonkocot/Projects/fpv-blast/src/App.svelte', 'utf8');
+
+    expect(source).toContain('initialCenter={[$mapOverlay.activeLocation.lon, $mapOverlay.activeLocation.lat]}');
+    expect(source).toContain('initialZoom={$mapOverlay.activeLocation.lat === 0 && $mapOverlay.activeLocation.lon === 0 ? 2 : 9}');
+  });
 });

@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { buildUrl, decodeResponse, fetchModel } from '../lib/services/openMeteo';
+import {
+  buildOverlayUrl,
+  buildUrl,
+  decodeOverlayResponse,
+  decodeResponse,
+  fetchModel,
+  interpolateOverlay20m,
+  WeatherApiRateLimitError,
+} from '../lib/services/openMeteo';
 
 describe('buildUrl', () => {
   it('includes lat/lon', () => {
@@ -27,6 +35,17 @@ describe('buildUrl', () => {
   });
   it('includes wind_gusts_10m variable', () => {
     expect(buildUrl(0, 0, 'best_match')).toContain('wind_gusts_10m');
+  });
+});
+
+describe('buildOverlayUrl', () => {
+  it('requests speed and direction fields for the overlay', () => {
+    const url = buildOverlayUrl(50.06, 19.94, 'ecmwf_ifs04');
+    expect(url).toContain('wind_speed_10m');
+    expect(url).toContain('wind_speed_80m');
+    expect(url).toContain('wind_direction_10m');
+    expect(url).toContain('wind_direction_80m');
+    expect(url).not.toContain('wind_speed_120m');
   });
 });
 
@@ -65,6 +84,49 @@ describe('decodeResponse', () => {
   });
 });
 
+describe('decodeOverlayResponse', () => {
+  it('decodes overlay wind direction fields', () => {
+    const decoded = decodeOverlayResponse({
+      hourly: {
+        time: ['2026-04-05T14:00'],
+        wind_speed_10m: [12],
+        wind_speed_80m: [20],
+        wind_direction_10m: [180],
+        wind_direction_80m: [210],
+      },
+    });
+
+    expect(decoded.directionAt10m[0]).toBe(180);
+    expect(decoded.directionAt80m[0]).toBe(210);
+  });
+});
+
+describe('interpolateOverlay20m', () => {
+  it('interpolates 20m speed between 10m and 80m', () => {
+    const output = interpolateOverlay20m({
+      times: [new Date('2026-04-05T14:00:00Z')],
+      speedAt10m: [10],
+      speedAt80m: [80],
+      directionAt10m: [90],
+      directionAt80m: [90],
+    });
+
+    expect(output.speedAt20m[0]).toBe(20);
+  });
+
+  it('interpolates direction using the shortest angular path', () => {
+    const output = interpolateOverlay20m({
+      times: [new Date('2026-04-05T14:00:00Z')],
+      speedAt10m: [10],
+      speedAt80m: [20],
+      directionAt10m: [350],
+      directionAt80m: [10],
+    });
+
+    expect(output.directionAt20m[0]).toBeCloseTo(352.8571428571, 10);
+  });
+});
+
 afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
@@ -90,5 +152,14 @@ describe('fetchModel timeout', () => {
 
     // The AbortController timeout should have fired within 8 seconds.
     expect(capturedSignal?.aborted).toBe(true);
+  });
+
+  it('throws a rate-limit error when the API returns 429', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false,
+      status: 429,
+    }));
+
+    await expect(fetchModel(0, 0, 'best_match')).rejects.toBeInstanceOf(WeatherApiRateLimitError);
   });
 });

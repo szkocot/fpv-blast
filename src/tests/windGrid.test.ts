@@ -2,6 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   bestFlyingWindow,
+  currentHourIndex,
   nowAt10m,
   peakInWindow,
   selectedHourForecast,
@@ -36,6 +37,16 @@ describe('nowAt10m', () => {
   it('returns wind at current hour index 0 (10m)', () => {
     const g = makeGrid(15);
     expect(nowAt10m(g)).toBeCloseTo(15);
+  });
+});
+
+describe('currentHourIndex', () => {
+  it('returns the index matching the current local hour', () => {
+    const base = new Date('2026-04-05T20:00:00');
+    const g = makeGrid(10, 6);
+    g.times = Array.from({ length: 6 }, (_, i) => new Date(base.getTime() + i * 3600000));
+
+    expect(currentHourIndex(g, new Date('2026-04-05T22:31:00'))).toBe(2);
   });
 });
 

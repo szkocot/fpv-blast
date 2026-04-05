@@ -9,15 +9,19 @@ export function sliceGrid(grid: WindGrid, hourOffset: number): number[][] {
 
 // Returns wind at 10m for the current real-world hour within the grid
 export function nowAt10m(grid: WindGrid): number {
-  const now = new Date();
+  const hourIdx = currentHourIndex(grid);
+  return grid.data[hourIdx]?.[0] ?? 0;
+}
+
+export function currentHourIndex(grid: WindGrid, now = new Date()): number {
   const idx = grid.times.findIndex(t =>
     t.getFullYear() === now.getFullYear() &&
-    t.getMonth()    === now.getMonth()    &&
-    t.getDate()     === now.getDate()     &&
-    t.getHours()    === now.getHours()
+    t.getMonth() === now.getMonth() &&
+    t.getDate() === now.getDate() &&
+    t.getHours() === now.getHours()
   );
-  const hourIdx = idx >= 0 ? idx : 0;
-  return grid.data[hourIdx]?.[0] ?? 0;
+
+  return idx >= 0 ? idx : 0;
 }
 
 export function peakInWindow(grid: WindGrid, hourOffset: number): { speed: number; heightIndex: number } | null {

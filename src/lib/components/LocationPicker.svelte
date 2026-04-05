@@ -93,7 +93,7 @@
         </div>
       {:else if searchAttempted && searchQuery.length >= 2}
         <div class="results-dropdown">
-          <div class="result-item no-results">No results</div>
+          <div class="result-item no-results">{$t.noResults}</div>
         </div>
       {/if}
     </div>

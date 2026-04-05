@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { read, write } from '../lib/services/forecastCache';
-import type { WindGrid } from '../lib/types';
+import { read, readOverlaySample, write, writeOverlaySample } from '../lib/services/forecastCache';
+import type { OverlaySample, WindGrid } from '../lib/types';
 
 function makeGrid(overrides: Partial<WindGrid> = {}): WindGrid {
   return {
@@ -10,6 +10,17 @@ function makeGrid(overrides: Partial<WindGrid> = {}): WindGrid {
     temperature: [15],
     weatherCode: [1],
     windGust: [20],
+    ...overrides,
+  };
+}
+
+function makeOverlaySample(overrides: Partial<OverlaySample> = {}): OverlaySample {
+  return {
+    lat: 50.06,
+    lon: 19.94,
+    speedKmh: 14,
+    directionDeg: 180,
+    fetchedAt: Date.now(),
     ...overrides,
   };
 }
@@ -81,5 +92,32 @@ describe('write', () => {
     write(50, 20, makeGrid({ modelCount: 6 }), 6);
     const result = read(50, 20);
     expect(result!.modelCount).toBe(6);
+  });
+});
+
+describe('overlay cache helpers', () => {
+  it('returns null when overlay cache is empty', () => {
+    expect(readOverlaySample('overlay:50.1:19.9:hour0')).toBeNull();
+  });
+
+  it('round-trips an overlay sample and preserves fetchedAt', () => {
+    const sample = makeOverlaySample();
+    writeOverlaySample('overlay:50.1:19.9:hour0', sample);
+
+    const result = readOverlaySample('overlay:50.1:19.9:hour0');
+    expect(result).not.toBeNull();
+    expect(result!.lat).toBe(sample.lat);
+    expect(result!.directionDeg).toBe(sample.directionDeg);
+    expect(result!.fetchedAt).toBe(sample.fetchedAt);
+  });
+
+  it('returns null when overlay cache read throws', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('unavailable'); });
+    expect(readOverlaySample('overlay:50.1:19.9:hour0')).toBeNull();
+  });
+
+  it('does not throw when overlay cache write fails', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new DOMException('QuotaExceededError'); });
+    expect(() => writeOverlaySample('overlay:50.1:19.9:hour0', makeOverlaySample())).not.toThrow();
   });
 });

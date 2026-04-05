@@ -2,6 +2,7 @@
 <script lang="ts">
   import { t } from '../i18n';
   export let locationName: string;
+  export let onOpenMap: () => void = () => {};
 
   $: dateStr = new Date().toLocaleDateString($t.dateLocale, { weekday: 'short', day: 'numeric', month: 'short' });
 </script>
@@ -14,7 +15,10 @@
       <span class="loc">{locationName || '…'}</span>
     </div>
   </div>
-  <span class="date">{dateStr}</span>
+  <div class="right">
+    <button class="map-btn" type="button" on:click={onOpenMap}>Map</button>
+    <span class="date">{dateStr}</span>
+  </div>
 </header>
 
 <style>
@@ -26,11 +30,28 @@
     border-bottom: 1px solid var(--border);
   }
   .left     { min-width: 0; }
+  .right    { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
   .app-name { font-size: 16px; font-weight: 900; color: var(--blue); letter-spacing: 1.5px; }
   .loc-row  { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
   .dot      { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
   .loc      { font-size: 13px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .date     { font-size: 13px; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; }
+  .map-btn  {
+    min-height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--blue) 38%, white);
+    background: color-mix(in srgb, var(--blue) 14%, var(--surface));
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 900;
+    box-shadow: 0 6px 16px rgba(54, 113, 233, 0.12);
+    cursor: pointer;
+  }
+
+  .map-btn:hover {
+    background: color-mix(in srgb, var(--blue) 20%, var(--surface));
+  }
 
   @media (min-width: 1024px) {
     header {
@@ -51,6 +72,11 @@
     .loc,
     .date {
       font-size: 13px;
+    }
+
+    .map-btn {
+      min-height: 36px;
+      padding: 0 14px;
     }
   }
 </style>

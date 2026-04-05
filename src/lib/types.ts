@@ -13,6 +13,22 @@ export interface CustomLocation {
   name: string;
 }
 
+export interface ForecastLocation {
+  lat: number;
+  lon: number;
+  name: string;
+}
+
+export interface OverlaySample {
+  lat: number;
+  lon: number;
+  speedKmh: number;
+  directionDeg: number;
+  fetchedAt: number;
+}
+
+export type OverlayDensity = 'coarse' | 'medium' | 'fine';
+
 export interface WindGrid {
   data: number[][];   // [timeIndex 0..167][heightIndex 0..17] = km/h
   times: Date[];      // 168 entries
